@@ -1,0 +1,17 @@
+{
+  "name": "duelist",
+  "version": "1.0.0",
+  "description": "JavaScript-based todo list",
+  "main": "script.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "webpack serve --open --config webpack.config.js",
+    "build": "webpack --config webpack.config.js"
+  },
+  "author": "pmcrockett",
+  "license": "ISC",
+  "devDependencies": {
+    "webpack-cli": "^5.1.4",
+    "webpack-dev-server": "^4.15.1"
+  }
+}
