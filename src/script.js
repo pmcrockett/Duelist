@@ -35,6 +35,7 @@ class Task {
     progress;
     notes;
     id;
+    depth;
     currentlyEditing;
     useProgressFromSubtasks;
     subtaskList;
@@ -44,7 +45,7 @@ class Task {
     static lastId = -1;
 
     constructor(_title, _dueDate, _dueTime, _description, _priority, _progress, 
-            _notes, _supertask, _isClone) {
+            _notes, _supertaskList, _isClone) {
         this.title = _title || "";
 
         if (!_dueDate || _dueDate.length < 1) {
@@ -63,44 +64,59 @@ class Task {
         this.progress = _progress || "";
         this.notes = _notes || "";
 
+        if (_supertaskList) {
+            _supertaskList.add(this);
+        } else {
+            this.supertaskList = null;
+        }
+
+        this.currentlyEditing = "";
+        this.subtaskList = new TaskList(this);
+        this.expanded = true;
+        this.useProgressFromSubtasks = true;
+
         // Tasks that live in the copy buffer have no ID to ensure that pasted
         // tasks' IDs are contiguous without having to decrement Task.lastId.
         if (!_isClone) {
             this.assignNewId();
+            this.updateDepth(true);
         } else {
             this.id = -1;
-        }
-
-        this.currentlyEditing = "";
-        this.subtaskList = new TaskList();
-        this.expanded = true;
-        this.useProgressFromSubtasks = true;
-
-        if (_supertask) {
-            _supertask.subtaskList.add(this);
-            this.supertaskList = _supertask.subtaskList;
-        } else {
-            this.supertaskList = null;
         }
         // Place DOM object in supertask or root array
     }
 
-    clone(_recursive) {
-        console.log(this.due, this.dueDate, this.dueTime, this.dateString)
+    clone(_recursive, _supertaskList, _idx) {
         var cloned = new Task(this.title, format(this.due, "yyyy-MM-LL"), 
             format(this.due, "HH:mm"), 
             this.description, this.priority, this.progress, this.notes, 
-            this.supertask, true);
+            null, true);
         cloned.expanded = false;
         cloned.useProgressFromSubtasks = this.useProgressFromSubtasks;
+
+        if (_supertaskList) {
+            _supertaskList.add(cloned, _idx);
+        }
         
         if (_recursive) {
             for (let i = 0; i < this.subtaskList.tasks.length; i++) {
-                cloned.subtaskList.add(this.subtaskList.tasks[i].clone(_recursive));
+                this.subtaskList.tasks[i].clone(_recursive, cloned.subtaskList);
             }
         }
 
         return cloned;
+    }
+
+    updateDepth(_recursive) {
+        this.depth = 0;
+
+        if (this.supertaskList == null) return;
+
+        let supertask = this.supertaskList.owner;
+        while (supertask != null) {
+            this.depth++;
+            supertask = supertask.supertaskList ? supertask.supertaskList.owner : null;
+        }
     }
 
     editTitle() {
@@ -148,8 +164,9 @@ class Task {
     }
 
     refreshDom(_recursive) {
-        if (this.domDiv != null) {
-            this.domDiv.remove();
+        if (this.domDiv) {
+            this.domDiv.task.remove();
+            this.domDiv.subtasks.remove();
         }
 
         this.domDiv = dom.createCard(this);
@@ -179,6 +196,11 @@ class Task {
         return this.subtaskList.tasks;
     }
 
+    // Masks supertask list's owner for ease of use.
+    get supertask() {
+        return this.supertaskList ? this.supertaskList.owner : null;
+    }
+
     static generateId() {
         // If overflow happens, no it didn't.
         if (Task.lastId >= Number.MAX_SAFE_INTEGER) Task.lastId = -1;
@@ -188,8 +210,10 @@ class Task {
 
 class TaskList {
     tasks;
+    owner;
 
-    constructor(_subtasks) {
+    constructor(_owner, _subtasks) {
+        this.owner = _owner;
         this.tasks = _subtasks || [];
     }
 
@@ -204,6 +228,7 @@ class TaskList {
 
         this.tasks.splice(_idx, 0, _task);
         _task.supertaskList = this;
+        _task.updateDepth(true);
     }
 
     getTaskIdx(_task) {
@@ -255,6 +280,13 @@ let logger = (function() {
         console.log(_prepend + "Progress: " + _task.progress);
         console.log(_prepend + "Notes:  " + _task.notes);
         console.log(_prepend + "ID: " + _task.id);
+        console.log(_prepend + "Depth: " + _task.depth);
+        if (_task.supertaskList && _task.supertaskList.owner) {
+            console.log(_prepend + "Supertask: (" + _task.supertaskList.owner.id + 
+            ") " + _task.supertaskList.owner.title);
+        } else {
+            console.log(_prepend + "No supertask");
+        }
         
         if (_task.subtaskList.hasTasks()) {
             console.log(_prepend + _task.subtaskList.tasks.length + 
@@ -297,9 +329,11 @@ let copier = (function() {
         }
 
         if (this.buffer) {
-            let cloned = this.buffer.clone(true);
+            let cloned = this.buffer.clone(true, _taskList, _idx);
             cloned.assignNewIdRecursive();
-            _taskList.add(cloned, _idx);
+            cloned.updateDepth(true);
+            cloned.refreshDom(true);
+            //_taskList.add(cloned, _idx);
 
             return true;
         }
@@ -314,7 +348,7 @@ let copier = (function() {
     }
 })();
 
-let taskList = new TaskList([ new Task("Test Task") ]);
+let taskList = new TaskList(null, [ new Task("Test Task") ]);
 taskList.tasks[0].addSubtask(new Task("Another task", "2024-02-01", "17:00",
     "This is a test task.", 2, 4, "No notes for this task."));
 taskList.tasks[0].subtasks[0].addSubtask(new Task("Fourth task"));
@@ -323,11 +357,11 @@ taskList.tasks[0].subtasks[0].subtasks[0].addSubtask(new Task("Sixth task"));
 taskList.tasks[0].addSubtask(new Task("A third task"));
 //topLevelTasks[0].subtaskList.removeIdx(0);
 //topLevelTasks[0].subtaskList.removeId(1);
-//copier.copy(taskList.tasks[0].subtaskList.tasks[0], true);
-copier.copy(taskList.tasks[0].subtasks[0], true);
+copier.copy(taskList.tasks[0].subtaskList.tasks[0], true);
+//copier.copy(taskList.tasks[0].subtasks[0], true);
 //copier.cut(taskList.tasks[0].subtaskList.tasks[0], false);
 //copier.cut(taskList.tasks[0].subtaskList.tasks[0], true);
-copier.paste(taskList.tasks[0].subtasks[0].subtasks[0].subtasks[1]);
+//copier.paste(taskList.tasks[0].subtasks[0].subtasks[0].subtasks[1]);
 copier.paste(taskList, 0);
 
 taskList.tasks.forEach(_elem => {

@@ -2,10 +2,29 @@
     margin: 0px;
 }
 
+:root {
+    --border-col: blueviolet;
+    --card-indent: 16px;
+}
+
 .task {
     background-color: rgb(247, 206, 247);
     border-style: solid;
-    border-color: blueviolet;
+    border-color: var(--border-col);
     border-radius: 10px;
     border-width: 2px;
+}
+
+.card-spacer {
+    height: 4px;
+    /* background-color: var(--border-col); */
+}
+
+.card-title, .card-due {
+    background-color: var(--border-col);
+}
+
+.task.collapsed > .card-content,
+.subtasks.collapsed {
+    display: none;
 }
