@@ -70,7 +70,7 @@ class Task {
             this.supertaskList = null;
         }
 
-        this.currentlyEditing = "";
+        this.currentlyEditing = false;
         this.subtaskList = new TaskList(this);
         this.expanded = true;
         this.useProgressFromSubtasks = true;
@@ -166,10 +166,10 @@ class Task {
     refreshDom(_recursive) {
         if (this.domDiv) {
             this.domDiv.task.remove();
-            this.domDiv.subtasks.remove();
+            if (_recursive) this.domDiv.subtasks.remove();
         }
 
-        this.domDiv = dom.createCard(this);
+        this.domDiv = dom.createCard(this, stateManager);
 
         if (_recursive) {
             this.subtaskList.refreshDom(_recursive);
@@ -212,9 +212,16 @@ class TaskList {
     tasks;
     owner;
 
-    constructor(_owner, _subtasks) {
+    constructor(_owner, _tasks) {
         this.owner = _owner;
-        this.tasks = _subtasks || [];
+        //this.tasks = _subtasks || [];
+        this.tasks = [];
+
+        if (_tasks) {
+            _tasks.forEach(_task => {
+                this.add(_task);
+            });
+        }
     }
 
     sort() {
@@ -268,6 +275,14 @@ class TaskList {
         });
     }
 }
+
+let stateManager = (function() {
+    let currentlyEditing = false;
+
+    return {
+        currentlyEditing
+    }
+})();
 
 let logger = (function() {
     let logTask = function(_task, _prepend) {
@@ -361,11 +376,12 @@ copier.copy(taskList.tasks[0].subtaskList.tasks[0], true);
 //copier.copy(taskList.tasks[0].subtasks[0], true);
 //copier.cut(taskList.tasks[0].subtaskList.tasks[0], false);
 //copier.cut(taskList.tasks[0].subtaskList.tasks[0], true);
-//copier.paste(taskList.tasks[0].subtasks[0].subtasks[0].subtasks[1]);
-copier.paste(taskList, 0);
 
 taskList.tasks.forEach(_elem => {
     _elem.log();
 });
 
+console.log("about to refresh");
 taskList.refreshDom(true);
+//copier.paste(taskList.tasks[0].subtasks[0].subtasks[0].subtasks[1]);
+copier.paste(taskList, 0);

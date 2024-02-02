@@ -3,16 +3,75 @@
 }
 
 :root {
-    --border-col: blueviolet;
+    --card-border-col: blueviolet;
+    --card-border-hover-col: rgb(112, 6, 212);
+    --card-bg-col: rgb(247, 206, 247);
+    --card-bg-hover-col: rgb(248, 159, 248);
     --card-indent: 16px;
 }
 
-.task {
-    background-color: rgb(247, 206, 247);
-    border-style: solid;
-    border-color: var(--border-col);
+body {
+    background-color: aquamarine;
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    grid-template-rows: 10vh 40vh 50vh;
+    justify-content: center;
+    align-content: start;
+}
+
+.card-input {
+    background-color: burlywood;
+    grid-area: 2 / 2 / 3 / 3;
     border-radius: 10px;
-    border-width: 2px;
+}
+
+.task-bin {
+    grid-area: 1 / 1 / 4 / 4;
+}
+
+.task {
+    background-color: var(--card-bg-col);
+    /* border-style: solid; */
+    /* border-color: var(--card-border-col); */
+    border-radius: 10px;
+    /* border-width: 2px; */
+}
+
+.card-title-div {
+    background-color: var(--card-border-col);
+}
+
+.edit-task-img {
+    display: none;
+    fill: var(--card-bg-hover-col);
+    width: 32px;
+    height: 32px;
+    grid-area: 1 / 2 / 3 / 3;
+    justify-self: end;
+    align-self: center;
+}
+
+.card-header-div:hover > .edit-task-img {
+    display: grid;
+}
+
+.confirm-edit-img {
+    fill: var(--card-border-col);
+    width: 32px;
+    height: 32px;
+}
+
+.card-header-div {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 1fr 1fr;
+    justify-content: space-between;
+    justify-items: start;
+    align-items: center;
+}
+
+.card-due {
+    grid-area: 2 / 1 / 3 / 3;
 }
 
 .card-spacer {
@@ -20,8 +79,20 @@
     /* background-color: var(--border-col); */
 }
 
-.card-title, .card-due {
-    background-color: var(--border-col);
+.card-header-div {
+    background-color: var(--card-border-col);
+}
+
+.card-header-div {
+    border-radius: 10px 10px 10px 10px;
+}
+
+/* .card-editable:hover {
+    background-color: var(--card-bg-hover-col);
+} */
+
+.card-header-div:hover {
+    background-color: var(--card-border-hover-col);
 }
 
 .task.collapsed > .card-content,
