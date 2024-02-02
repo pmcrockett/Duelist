@@ -13,5 +13,8 @@
   "devDependencies": {
     "webpack-cli": "^5.1.4",
     "webpack-dev-server": "^4.15.1"
+  },
+  "dependencies": {
+    "date-fns": "^3.3.1"
   }
 }
