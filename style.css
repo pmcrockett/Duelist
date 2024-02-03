@@ -14,7 +14,7 @@ body {
     background-color: aquamarine;
     display: grid;
     grid-template-columns: 1fr 1fr 1fr;
-    grid-template-rows: 10vh 40vh 50vh;
+    grid-template-rows: 10vh 50vh 40vh;
     justify-content: center;
     align-content: start;
 }
@@ -23,6 +23,14 @@ body {
     background-color: burlywood;
     grid-area: 2 / 2 / 3 / 3;
     border-radius: 10px;
+    display: grid;
+    grid-auto-rows: min-content;
+}
+
+fieldset {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 1fr 1fr 1fr;
 }
 
 .task-bin {
@@ -53,6 +61,13 @@ body {
 
 .card-header-div:hover > .edit-task-img {
     display: grid;
+}
+
+.input-buttons {
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: min-content;
+    justify-content: end;
 }
 
 .confirm-edit-img {
