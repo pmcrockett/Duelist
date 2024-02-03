@@ -137,22 +137,111 @@ function createInputBox(_task, _stateManager, _body) {
     _body.appendChild(cardInput);
 
     let titleInput = document.createElement("input");
+    titleInput.setAttribute("type", "text");
+    titleInput.setAttribute("value", _task.title);
     cardInput.appendChild(titleInput);
+
+    let dateInput = document.createElement("input");
+    dateInput.setAttribute("type", "date");
+    dateInput.setAttribute("value", _task.dueDate);
+    cardInput.appendChild(dateInput);
+
+    let timeInput = document.createElement("input");
+    timeInput.setAttribute("type", "time");
+    timeInput.setAttribute("value", _task.dueTime);
+    cardInput.appendChild(timeInput);
+
+    let descInput = document.createElement("textarea");
+    descInput.textContent = _task.description;
+    cardInput.appendChild(descInput);
+
+    let priorityField = createRadioField("priority-radio", _task.priority, [ "N/A", "Unimportant", 
+        "Important", "Urgent" ]);
+    cardInput.appendChild(priorityField);
+
+    let progressField = createRadioField("progress-radio", _task.progress, [ "N/A", "Not started", 
+        "In progress", "Complete" ]);
+    cardInput.appendChild(progressField);
+
+    let notesInput = document.createElement("textarea");
+    notesInput.textContent = _task.notes;
+    cardInput.appendChild(notesInput);
+
+    let buttonDiv = document.createElement("div");
+    buttonDiv.classList.add("input-buttons");
+    cardInput.appendChild(buttonDiv);
 
     let confirm = createSvg("M12 2C6.5 2 2 6.5 2 12S6.5 22 12 22 22 17.5 22 12 17.5 2 12 2M10 17L5 12L6.41 10.59L10 14.17L17.59 6.58L19 8L10 17Z",
         "Confirm");
     confirm.classList.add("confirm-edit-img");
-    cardInput.appendChild(confirm);
+    buttonDiv.appendChild(confirm);
+
+    let cancel = createSvg("M9,7L11,12L9,17H11L12,14.5L13,17H15L13,12L15,7H13L12,9.5L11,7H9M12,2A10,10 0 0,1 22,12A10,10 0 0,1 12,22A10,10 0 0,1 2,12A10,10 0 0,1 12,2Z",
+        "Cancel");
+    cancel.classList.add("confirm-edit-img");
+    buttonDiv.appendChild(cancel);
 
     confirm.addEventListener("click", _event => {
         _task.currentlyEditing = false;
         _stateManager.currentlyEditing = false;
 
         _task.title = titleInput.value;
+        _task.dueDate = dateInput.value;
+        _task.dueTime = timeInput.value;
+        _task.updateDue();
+        _task.description = descInput.value;
+        _task.priority = getRadioValue(priorityField);
+        _task.progress = getRadioValue(progressField);
+        _task.notes = notesInput.value;
 
         cardInput.remove();
         _task.refreshDom(false);
     });
+
+    cancel.addEventListener("click", _event => {
+        _task.currentlyEditing = false;
+        _stateManager.currentlyEditing = false;
+        
+        cardInput.remove();
+    });
+}
+
+function createRadioField(_name, _defaultValue, _labelArr) {
+    let field = document.createElement("fieldset");
+    field.classList.add(`${_name}-fieldset`);
+
+    let radios = [];
+    let labels = [];
+
+    for (let i = 0; i < _labelArr.length; i++) {
+        radios.push(document.createElement("input"));
+        radios[i].setAttribute("type", "radio");
+        radios[i].setAttribute("id", `${_name}-${i}`);
+        radios[i].setAttribute("name", _name);
+        radios[i].setAttribute("value", _labelArr[i]);
+        field.appendChild(radios[i]);
+
+        labels.push(document.createElement("label"));
+        labels[i].setAttribute("for", `${_name}-${i}`);
+        labels[i].textContent = _labelArr[i];
+        field.appendChild(labels[i]);
+    }
+
+    radios[_defaultValue].setAttribute("checked", "");
+
+    return field;
+}
+
+function getRadioValue(_fieldset) {
+    let radios = _fieldset.querySelectorAll("input");
+
+    for (let i = 0; i < radios.length; i++) {
+        if (radios[i].checked) {
+            return i;
+        }
+    }
+
+    return -1;
 }
 
 function createSvg(_path, _title) {

@@ -30,6 +30,8 @@ import timezoneString from "./timezone-string.js";
 class Task {
     title;
     due;
+    dueDate;
+    dueTime;
     description;
     priority;
     progress;
@@ -47,18 +49,9 @@ class Task {
     constructor(_title, _dueDate, _dueTime, _description, _priority, _progress, 
             _notes, _supertaskList, _isClone) {
         this.title = _title || "";
-
-        if (!_dueDate || _dueDate.length < 1) {
-            let today = new Date(Date.now());
-            let padLen = 2;
-            _dueDate = `${today.getFullYear()}-${String(today.getMonth() + 1).
-                padStart(padLen, "0")}-${String(today.getDate()).padStart(padLen, "0")}`;
-        }
-
-        _dueTime = _dueTime == null || _dueTime.length < 1 ? "00:00" : _dueTime;
-        let timezone = timezoneString();
-        this.dateString = `${_dueDate}T${_dueTime}:00.000${timezone}`;
-        this.due = new Date(this.dateString);
+        this.dueDate = _dueDate;
+        this.dueTime = _dueTime;
+        this.updateDue();
         this.description = _description || "";
         this.priority = _priority || "";
         this.progress = _progress || "";
@@ -105,6 +98,23 @@ class Task {
         }
 
         return cloned;
+    }
+
+    updateDue() {
+        if (!this.dueDate || this.dueDate.length < 1) {
+            let today = new Date(Date.now());
+            let padLen = 2;
+            this.dueDate = `${today.getFullYear()}-${String(today.getMonth() + 1).
+                padStart(padLen, "0")}-${String(today.getDate()).padStart(padLen, "0")}`;
+        }
+
+        if (!this.dueTime || this.dueTime.length < 1) {
+            this.dueTime = "00:00";
+        }
+
+        let timezone = timezoneString();
+        this.dateString = `${this.dueDate}T${this.dueTime}:00.000${timezone}`;
+        this.due = new Date(this.dateString);
     }
 
     updateDepth(_recursive) {
@@ -365,7 +375,7 @@ let copier = (function() {
 
 let taskList = new TaskList(null, [ new Task("Test Task") ]);
 taskList.tasks[0].addSubtask(new Task("Another task", "2024-02-01", "17:00",
-    "This is a test task.", 2, 4, "No notes for this task."));
+    "This is a test task.", 2, 3, "No notes for this task."));
 taskList.tasks[0].subtasks[0].addSubtask(new Task("Fourth task"));
 taskList.tasks[0].subtasks[0].subtasks[0].addSubtask(new Task("Fifth task"));
 taskList.tasks[0].subtasks[0].subtasks[0].addSubtask(new Task("Sixth task"));
