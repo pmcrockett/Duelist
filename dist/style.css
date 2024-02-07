@@ -8,6 +8,7 @@
     --card-bg-col: rgb(247, 206, 247);
     --card-bg-hover-col: rgb(248, 159, 248);
     --card-indent: 16px;
+    width: 100vw;
 }
 
 body {
@@ -113,4 +114,24 @@ fieldset {
 .task.collapsed > .card-content,
 .subtasks.collapsed {
     display: none;
+}
+
+.menu {
+    overflow: hidden;
+}
+
+.menu-rect {
+    fill: var(--card-bg-col);
+}
+
+.menu-border {
+    fill: var(--card-border-col);
+}
+
+.menu-text {
+    fill: black;
+}
+
+.menu-highlight {
+    fill: var(--card-bg-hover-col);
 }

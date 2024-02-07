@@ -26,6 +26,7 @@
 import { format } from "date-fns";
 import * as dom from "./dom.js";
 import timezoneString from "./timezone-string.js";
+import RightClickMenu from "./right-click-menu.js";
 
 class Task {
     title;
@@ -395,3 +396,25 @@ console.log("about to refresh");
 taskList.refreshDom(true);
 //copier.paste(taskList.tasks[0].subtasks[0].subtasks[0].subtasks[1]);
 copier.paste(taskList, 0);
+let menu = new RightClickMenu([ "Copy (with subtasks)", "Copy (without subtasks)", 
+    "Cut (with subtasks)", "Cut (without subtasks)", "Paste" ], 
+    [
+        function() {copier.copy(taskList.tasks[0], true)},
+        function() {copier.copy(taskList.tasks[0], false)},
+        function() {copier.cut(taskList.tasks[0], true)},
+        function() {copier.cut(taskList.tasks[0], false)},
+        function() {copier.paste(taskList, 0)}
+    ]);
+document.querySelector("body").appendChild(menu.svg);
+// document.addEventListener("click", _e => {
+//     if (_e.button == 2) {
+//         menu.buttonDown(_e.clientX, _e.clientY);
+//     }
+// });
+
+document.addEventListener("contextmenu", (_e) => {
+    _e.preventDefault();
+    menu.buttonDown(_e.pageX, _e.pageY);
+    return false;
+});
+//menu.updateHighlight(11, 11);
