@@ -116,6 +116,46 @@ export function createCard(_task, _stateManager) {
     };
 }
 
+export function freeze() {
+    taskBin.classList.add("freeze");
+}
+
+export function thaw() {
+    taskBin.classList.remove("freeze");
+}
+
+export function select(_taskId) {
+    let card = taskBin.querySelector(`.task.id-${_taskId}`);
+
+    if (card) {
+        card.classList.add("selected");
+    }
+}
+
+export function unselect(_taskId) {
+    let card = taskBin.querySelector(`.task.id-${_taskId}`);
+
+    if (card) {
+        card.classList.remove("selected");
+    }
+}
+
+export function getTaskIdAtPos(_x, _y) {
+    let underMouse = document.elementsFromPoint(_x, _y);
+
+    for (let _elem of underMouse) {
+        if (_elem.classList.contains("task")) {
+            let idPos = _elem.className.indexOf("id-");
+            let idEnd = _elem.className.indexOf(" ", idPos);
+            if (idEnd < 0) idEnd = _elem.className.length;
+
+            return Number(_elem.className.slice(idPos + 3, idEnd));
+        }
+    };
+
+    return -1;
+}
+
 function expandCard(_task, _div, _subDiv) {
     if (_task.expanded) {
         _div.classList.remove("collapsed");

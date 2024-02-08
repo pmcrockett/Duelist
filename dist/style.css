@@ -60,7 +60,8 @@ fieldset {
     align-self: center;
 }
 
-.card-header-div:hover > .edit-task-img {
+.task-bin:not(.freeze)  .card-header-div:hover > .edit-task-img,
+.task.selected > .card-header-div > .edit-task-img {
     display: grid;
 }
 
@@ -107,7 +108,8 @@ fieldset {
     background-color: var(--card-bg-hover-col);
 } */
 
-.card-header-div:hover {
+.task-bin:not(.freeze) .card-header-div:hover, 
+.task.selected > .card-header-div  {
     background-color: var(--card-border-hover-col);
 }
 
