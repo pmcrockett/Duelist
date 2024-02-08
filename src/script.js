@@ -54,8 +54,8 @@ class Task {
         this.dueTime = _dueTime;
         this.updateDue();
         this.description = _description || "";
-        this.priority = _priority || "";
-        this.progress = _progress || "";
+        this.priority = _priority || 0;
+        this.progress = _progress || 0;
         this.notes = _notes || "";
 
         if (_supertaskList) {
@@ -388,10 +388,6 @@ let logger = (function() {
 let copier = (function() {
     const buffer = [];
 
-    // let copy = function(_task, _recursive) {
-    //     buffer.push(_task.clone(_recursive));
-    // }
-
     let copy = function(_tasks, _recursive, _globalTaskList) {
         if (!(_tasks instanceof Array)) {
             _tasks = [ _tasks ];
@@ -403,23 +399,15 @@ let copier = (function() {
             _tasks = reduceRecursiveInput(_tasks);
         }
 
+        // Ensure that tasks are copied in visual order and not in selection order.
         let idOrder = _globalTaskList.getIdOrder(true);
         _tasks.sort(function(a, b) {
             return idOrder.indexOf(a.id) < idOrder.indexOf(b.id) ? -1 : 1;
         });
 
-        // let test = [4, 2];
-        // test.sort(function(a, b) {
-        //     //return [1, 2, 3, 4, 5].indexOf(a.id) > [1, 2, 3, 4, 5].indexOf(b.id);
-        //     return -1;
-        // });
-        // console.log(test);
-
         for (let task of _tasks) {
             buffer.push(task.clone(_recursive));
         }
-
-        console.log(buffer);
     }
 
     let cut = function(_tasks, _recursive, _refresh, _globalTaskList) {
@@ -664,6 +652,7 @@ document.addEventListener("keyup", _e => {
 
 document.addEventListener("click", _e => {
     let task = taskList.getTaskById(dom.getTaskIdAtPos(_e.pageX, _e.pageY), true);
+    dom.thaw();
     
     if (task) {
         if (selection.selectionAddTo) {
