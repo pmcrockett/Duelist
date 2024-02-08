@@ -150,8 +150,12 @@ class Task {
 
     }
 
-    delete() {
+    delete(_recursive) {
         if (this.supertaskList) {
+            if (this.domDiv) {
+                this.domDiv.task.remove();
+                if (_recursive) this.domDiv.subtasks.remove();
+            }
             return this.supertaskList.removeId(this.id);
         }
 
@@ -276,11 +280,33 @@ class TaskList {
         return true;
     }
 
+    getTaskById(_id, _recursive) {
+        let idTask = null;
+
+        for (let task of this.tasks) {
+            if (task.id == _id) {
+                return task;
+            } else if (_recursive && task.subtaskList.hasTasks()) {
+                idTask = task.subtaskList.getTaskById(_id, _recursive);
+            }
+        }
+
+        return idTask;
+    }
+
     hasTasks() {
         return this.tasks.length >= 1;
     }
 
     refreshDom(_recursive) {
+        // To ensure proper order, remove all tasks before redrawing any of them.
+        this.tasks.forEach(_task => {
+            if (_task.domDiv) {
+                _task.domDiv.task.remove();
+                if (_recursive) _task.domDiv.subtasks.remove();
+            }
+        });
+
         this.tasks.forEach(_task => {
             _task.refreshDom(_recursive);
         });
@@ -334,18 +360,26 @@ let copier = (function() {
         this.buffer = _task.clone(_recursive);
     }
 
-    let cut = function(_task, _recursive) {
+    let cut = function(_task, _recursive, _refresh) {
         this.copy(_task, _recursive);
+        let insertIdx = _task.supertaskList.getTaskIdx(_task);
+        let supertaskList = _task.supertaskList;
+        let subtaskList = _task.subtaskList;
+        _task.delete(true);
 
         if (!_recursive) {
-            let insertIdx = _task.supertaskList.getTaskIdx(_task);
 
-            for (let i = 0; i < _task.subtaskList.tasks.length; i++) {
-                _task.supertaskList.add(_task.subtaskList.tasks[i], insertIdx);
+            for (let i = 0; i < subtaskList.tasks.length; i++) {
+                console.log(`Insert idx: ${insertIdx}`);
+                console.log(supertaskList.tasks);
+                supertaskList.add(subtaskList.tasks[i], insertIdx++);
             }
         }
 
-        _task.delete();
+        
+        if (_refresh) {
+            supertaskList.refreshDom(true);
+        }
     }
 
     let paste = function(_taskList, _idx) {
@@ -383,7 +417,7 @@ taskList.tasks[0].subtasks[0].subtasks[0].addSubtask(new Task("Sixth task"));
 taskList.tasks[0].addSubtask(new Task("A third task"));
 //topLevelTasks[0].subtaskList.removeIdx(0);
 //topLevelTasks[0].subtaskList.removeId(1);
-copier.copy(taskList.tasks[0].subtaskList.tasks[0], true);
+//copier.copy(taskList.tasks[0].subtaskList.tasks[0], true);
 //copier.copy(taskList.tasks[0].subtasks[0], true);
 //copier.cut(taskList.tasks[0].subtaskList.tasks[0], false);
 //copier.cut(taskList.tasks[0].subtaskList.tasks[0], true);
@@ -395,17 +429,8 @@ taskList.tasks.forEach(_elem => {
 console.log("about to refresh");
 taskList.refreshDom(true);
 //copier.paste(taskList.tasks[0].subtasks[0].subtasks[0].subtasks[1]);
-copier.paste(taskList, 0);
-let menu = new RightClickMenu([ "Copy (with subtasks)", "Copy (without subtasks)", 
-    "Cut (with subtasks)", "Cut (without subtasks)", "Paste" ], 
-    [
-        function() {copier.copy(taskList.tasks[0], true)},
-        function() {copier.copy(taskList.tasks[0], false)},
-        function() {copier.cut(taskList.tasks[0], true)},
-        function() {copier.cut(taskList.tasks[0], false)},
-        function() {copier.paste(taskList, 0)}
-    ]);
-document.querySelector("body").appendChild(menu.svg);
+//copier.paste(taskList, 0);
+
 // document.addEventListener("click", _e => {
 //     if (_e.button == 2) {
 //         menu.buttonDown(_e.clientX, _e.clientY);
@@ -414,7 +439,56 @@ document.querySelector("body").appendChild(menu.svg);
 
 document.addEventListener("contextmenu", (_e) => {
     _e.preventDefault();
-    menu.buttonDown(_e.pageX, _e.pageY);
-    return false;
+    let underMouse = document.elementsFromPoint(_e.pageX, _e.pageY);
+
+    let task = null;
+
+    for (let _elem of underMouse) {
+        if (_elem.classList.contains("task")) {
+            //let id = _elem.classList.find(_class => _class.slice(0, 3) == "id-");
+            let idPos = _elem.className.indexOf("id-");
+            let idEnd = _elem.className.indexOf(" ", idPos);
+            if (idEnd < 0) idEnd = _elem.className.length;
+
+            let id = Number(_elem.className.slice(idPos + 3, idEnd));
+            task = taskList.getTaskById(id, true);
+            console.log(id, task);
+            break;
+        }
+    };
+
+    if (task) {
+        let menuTexts = [ "Copy (with subtasks)", "Copy (without subtasks)", 
+        "Cut (with subtasks)", "Cut (without subtasks)" ];
+        let menuFunctions = [
+            function() {copier.copy(task, true)},
+            function() {copier.copy(task, false)},
+            function() {copier.cut(task, true, true)},
+            function() {copier.cut(task, false, true)}
+        ];
+
+        // Only show paste option if there's something to paste.
+        if (copier.buffer) {
+            menuTexts.push("Paste (above)", "Paste (below)", "Paste (as subtask)");
+            menuFunctions.push(
+                function() {copier.paste(task.supertaskList, 
+                    task.supertaskList.getTaskIdx(task))},
+                function() {copier.paste(task.supertaskList, 
+                    task.supertaskList.getTaskIdx(task) + 1)},
+                function() {copier.paste(task.subtaskList)}
+            );
+        }
+
+        let menu = new RightClickMenu(menuTexts, menuFunctions);
+        document.querySelector("body").appendChild(menu.svg);
+        menu.buttonDown(_e.pageX, _e.pageY);
+    } else if (copier.buffer) {
+        let menu = new RightClickMenu([ "Paste" ], 
+            [
+                function() {copier.paste(taskList)}
+            ]);
+        document.querySelector("body").appendChild(menu.svg);
+        menu.buttonDown(_e.pageX, _e.pageY);
+    }
+
 });
-//menu.updateHighlight(11, 11);

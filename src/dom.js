@@ -88,7 +88,8 @@ export function createCard(_task, _stateManager) {
 
     if (!subtasks) {
         subtasks = document.createElement("div");
-        supertaskDiv.appendChild(subtasks);
+        //supertaskDiv.appendChild(subtasks);
+        card.insertAdjacentElement("afterend", subtasks);
         subtasks.classList.add("subtasks", `id-${_task.id}`);
     } else {
         subtasks.remove();

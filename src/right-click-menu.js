@@ -72,7 +72,7 @@ export default class {
             }
         });
 
-        document.addEventListener("click", _e => {
+        document.addEventListener("mousedown", _e => {
             if (this.isVisible) {
                 let menuSelection = this.getHighlighted();
                 let menuMouseOver = document.elementsFromPoint(_e.pageX, _e.pageY);
@@ -82,6 +82,7 @@ export default class {
                 }
     
                 this.erase();
+                this.svg.remove();
             }
         });
     }
