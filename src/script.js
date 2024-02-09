@@ -30,9 +30,10 @@ import RightClickMenu from "./right-click-menu.js";
 
 class Task {
     title;
-    due;
     dueDate;
+    dueDateStr;
     dueTime;
+    dueTimeStr;
     description;
     priority;
     progress;
@@ -47,11 +48,11 @@ class Task {
     domDiv;
     static lastId = -1;
 
-    constructor(_title, _dueDate, _dueTime, _description, _priority, _progress, 
+    constructor(_title, _dueDateStr, _dueTimeStr, _description, _priority, _progress, 
             _notes, _supertaskList, _isClone) {
         this.title = _title || "";
-        this.dueDate = _dueDate;
-        this.dueTime = _dueTime;
+        this.dueDateStr = _dueDateStr;
+        this.dueTimeStr = _dueTimeStr;
         this.updateDue();
         this.description = _description || "";
         this.priority = _priority || 0;
@@ -81,8 +82,7 @@ class Task {
     }
 
     clone(_recursive, _supertaskList, _idx) {
-        var cloned = new Task(this.title, format(this.due, "yyyy-MM-LL"), 
-            format(this.due, "HH:mm"), 
+        var cloned = new Task(this.title, this.dueDateStr, this.dueTimeStr, 
             this.description, this.priority, this.progress, this.notes, 
             null, true);
         cloned.expanded = false;
@@ -102,20 +102,32 @@ class Task {
     }
 
     updateDue() {
-        if (!this.dueDate || this.dueDate.length < 1) {
-            let today = new Date(Date.now());
-            let padLen = 2;
-            this.dueDate = `${today.getFullYear()}-${String(today.getMonth() + 1).
-                padStart(padLen, "0")}-${String(today.getDate()).padStart(padLen, "0")}`;
-        }
+        // if (!this.dueDate || this.dueDate.length < 1) {
+        //     let today = new Date(Date.now());
+        //     let padLen = 2;
+        //     this.dueDate = `${today.getFullYear()}-${String(today.getMonth() + 1).
+        //         padStart(padLen, "0")}-${String(today.getDate()).padStart(padLen, "0")}`;
+        // }
 
-        if (!this.dueTime || this.dueTime.length < 1) {
-            this.dueTime = "00:00";
-        }
+        // if (!this.dueTime || this.dueTime.length < 1) {
+        //     this.dueTime = "00:00";
+        // }
+
+        // let timezone = timezoneString();
+        // this.dateString = `${this.dueDate}T${this.dueTime}:00.000${timezone}`;
+        // this.due = new Date(this.dateString);
 
         let timezone = timezoneString();
-        this.dateString = `${this.dueDate}T${this.dueTime}:00.000${timezone}`;
-        this.due = new Date(this.dateString);
+
+        if (this.dueDateStr && this.dueDateStr.length) {
+            let dateString = `${this.dueDateStr}T00:00:00${timezone}`;
+            this.dueDate = new Date(dateString);
+        }
+
+        if (this.dueTimeStr && this.dueTimeStr.length) {
+            let dateString = `2000-01-01T${this.dueTimeStr}:00${timezone}`;
+            this.dueTime = new Date(dateString);
+        }
     }
 
     updateDepth(_recursive) {
@@ -240,6 +252,7 @@ class Task {
 class TaskList {
     tasks;
     owner;
+    expanded = true;
 
     constructor(_owner, _tasks) {
         this.owner = _owner;
@@ -434,7 +447,11 @@ let copier = (function() {
             }
     
             if (_refresh) {
-                supertaskList.refreshDom(true);
+                if (supertaskList.owner) {
+                    supertaskList.owner.refreshDom(true);
+                } else {
+                    supertaskList.refreshDom(true);
+                }
             }
         }
     }
@@ -453,7 +470,12 @@ let copier = (function() {
                 //cloned.refreshDom(true);
             }
 
-            _taskList.refreshDom(true);
+            if (_taskList.owner) {
+                _taskList.owner.refreshDom(true);
+            } else {
+                _taskList.refreshDom(true);
+            }
+
             return true;
         }
 

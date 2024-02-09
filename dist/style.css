@@ -7,7 +7,7 @@
     --card-border-hover-col: rgb(112, 6, 212);
     --card-bg-col: rgb(247, 206, 247);
     --card-bg-hover-col: rgb(248, 159, 248);
-    --card-indent: 16px;
+    --card-indent: 32px;
     width: 100vw;
 }
 
@@ -40,10 +40,13 @@ fieldset {
 
 .task {
     background-color: var(--card-bg-col);
-    /* border-style: solid; */
-    /* border-color: var(--card-border-col); */
     border-radius: 10px;
-    /* border-width: 2px; */
+    max-width: 400px;
+    padding-bottom: 10px;
+}
+
+.task.collapsed {
+    padding-bottom: 0px;
 }
 
 .card-title-div {
@@ -69,7 +72,7 @@ fieldset {
     fill: var(--card-bg-hover-col);
     width: 32px;
     height: 32px;
-    grid-area: 1 / 2 / 3 / 3;
+    grid-area: 1 / 1 / 5 / 2;
     justify-self: end;
     align-self: center;
 }
@@ -96,7 +99,14 @@ fieldset {
     fill: red;
 }
 
-.task-bin:not(.freeze)  .card-header-div:hover > .edit-task-img,
+.task-expand-img {
+    width: 32px;
+    height: 32px;
+    justify-self: center;
+    grid-area: 4 / 1 / 5 / 2;
+}
+
+.task-bin:not(.freeze) .card-header-div.hover-possible:hover > .edit-task-img,
 .task.selected > .card-header-div > .edit-task-img {
     display: grid;
 }
@@ -116,8 +126,8 @@ fieldset {
 
 .card-header-div {
     display: grid;
-    grid-template-columns: 1fr 1fr;
-    grid-template-rows: 1fr 1fr;
+    grid-template-columns: 1fr;
+    grid-template-rows: minmax(32px, auto) auto auto 10px;
     justify-content: space-between;
     justify-items: start;
     align-items: center;
@@ -125,23 +135,33 @@ fieldset {
     border-radius: 10px 10px 10px 10px;
 }
 
-.card-due {
-    grid-area: 2 / 1 / 3 / 3;
+.card-due-date {
+    grid-area: 2 / 1 / 3 / 2;
 }
 
-.card-spacer {
-    height: 4px;
-    /* background-color: var(--border-col); */
+.card-due-time {
+    grid-area: 3 / 1 / 4 / 2;
 }
 
-.task-bin:not(.freeze) .card-header-div:hover, 
+.task-bin:not(.freeze) .card-header-div.hover-possible:hover, 
 .task.selected > .card-header-div  {
     background-color: var(--card-border-hover-col);
 }
 
-.task.collapsed > .card-content,
-.subtasks.collapsed {
+.task.collapsed .card-container,
+.subtasks.collapsed > div:not(.subtasks-header) {
     display: none;
+}
+
+.subtasks-header {
+    display: grid;
+    grid-template-columns: min-content auto;
+    align-items: center;
+}
+
+.subtasks-plus-img {
+    height: 24px;
+    width: 24px;
 }
 
 .card-label {
@@ -162,16 +182,9 @@ fieldset {
     grid-template-rows: 0px auto;
 }
 
-.info-subcontainer {
+.info-container {
     display: grid;
-    gap: 64px;
     grid-template-columns: 1fr 1fr;
-}
-
-.card-content {
-    /* position: relative;
-    top: -10px; */
-    /* grid-area: 1 / 1 / 2 / 2; */
 }
 
 .menu {
@@ -192,4 +205,8 @@ fieldset {
 
 .menu-highlight {
     fill: var(--card-bg-hover-col);
+}
+
+.hidden {
+    display: none;
 }
