@@ -7,8 +7,10 @@
     --card-border-hover-col: rgb(112, 6, 212);
     --card-bg-col: rgb(247, 206, 247);
     --card-bg-hover-col: rgb(248, 159, 248);
+    --card-select-col: rgb(95, 11, 95);
     --card-indent: 32px;
     width: 100vw;
+    user-select: none;
 }
 
 body {
@@ -26,6 +28,7 @@ body {
     border-radius: 10px;
     display: grid;
     grid-auto-rows: min-content;
+    z-index: 3;
 }
 
 fieldset {
@@ -104,10 +107,10 @@ fieldset {
     height: 32px;
     justify-self: center;
     grid-area: 4 / 1 / 5 / 2;
+    z-index: 2;
 }
 
-.task-bin:not(.freeze) .card-header-div.hover-possible:hover > .edit-task-img,
-.task.selected > .card-header-div > .edit-task-img {
+.task-bin:not(.freeze) .card-header-div.hover-possible:hover > .edit-task-img {
     display: grid;
 }
 
@@ -143,8 +146,12 @@ fieldset {
     grid-area: 3 / 1 / 4 / 2;
 }
 
-.task-bin:not(.freeze) .card-header-div.hover-possible:hover, 
 .task.selected > .card-header-div  {
+    background-color: var(--card-select-col);
+}
+
+.task-bin:not(.freeze) .card-header-div.hover-possible:hover,
+.task.editing > .card-header-div {
     background-color: var(--card-border-hover-col);
 }
 
