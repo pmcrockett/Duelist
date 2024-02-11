@@ -84,18 +84,23 @@ export function createCard(_task, _stateManager) {
         hDiv.appendChild(dueTime);
     }
 
-    let taskExpandSvg = createSvg("M12,22A10,10 0 0,1 2,12A10,10 0 0,1 12,2A10,10 0 0,1 22,12A10,10 0 0,1 12,22M17,14L12,9L7,14H17Z", 
-        "Expand");
+    let taskExpandSvg = createSvg("", "Expand");
     taskExpandSvg.classList.add("task-expand-img");
     hDiv.appendChild(taskExpandSvg);
 
+    if (!_task.hasContent()) {
+        taskExpandSvg.classList.add("hidden");
+    }
+
     let taskExpandPath = taskExpandSvg.querySelector("path");
+    updateTaskExpandView(taskExpandPath, card, _task);
 
     // let spacer = document.createElement("div");
     // spacer.classList.add("card-spacer", "card-content");
     // card.appendChild(spacer);
 
-    if (_task.priority > 0 || _task.progress > 0) {
+    //if (_task.priority > 0 || _task.progress > 0 || _task.useProgressFromSubtasks) {
+        if (_task.priority > 0 || _task.progress > 0) {
         let infoContainer = document.createElement("div");
         infoContainer.classList.add("info-container");
         card.appendChild(infoContainer);
@@ -113,7 +118,7 @@ export function createCard(_task, _stateManager) {
             priorityContainer.appendChild(priority);
         }
     
-        if (_task.progress > 0) {
+        if (_task.progress > 0 || _task.useProgressFromSubtasks) {
             let progressContainer = createCardContainer([ "card-container" ]);
             infoContainer.appendChild(progressContainer);
     
@@ -122,6 +127,12 @@ export function createCard(_task, _stateManager) {
 
             let prog = document.createElement("div");
             prog.textContent = progressList[_task.progress];
+
+            if (_task.useProgressFromSubtasks) {
+                prog.textContent += " (from subtasks)";
+            }
+
+
             prog.classList.add("card-progress", "card-editable");
             progressContainer.appendChild(prog);
         }
@@ -167,17 +178,16 @@ export function createCard(_task, _stateManager) {
         subtasksHeader.setAttribute("style", indentStr)
         subtasks.appendChild(subtasksHeader);
 
-        let subtasksPlusSvg = createSvg("M17,13H7V11H17M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2Z",
-            "Subtasks");
+        let subtasksPlusSvg = createSvg("", "Subtasks");
         subtasksPlusSvg.classList.add("subtasks-plus-img");
         subtasksHeader.appendChild(subtasksPlusSvg);
 
         let subtasksPlusPath = subtasksPlusSvg.querySelector("path");
+        setSubtaskExpandView(_task.subtaskList.expanded, subtasks, _task, false);
 
         let subtasksText = document.createElement("div");
         subtasksText.classList.add("subtasks-text", `id-${_task.id}`);
         subtasksHeader.appendChild(subtasksText);
-
         
         subtasksText.textContent = `${_task.subtasks.length} 
             ${_task.subtasks.length == 1 ? "subtask" : "subtasks"}`;
@@ -192,13 +202,17 @@ export function createCard(_task, _stateManager) {
             if (_stateManager.currentlyEditing) return;
 
             _task.subtaskList.expanded = !_task.subtaskList.expanded;
-            expandCard(_task.subtaskList, subtasks);
+            setSubtaskExpandView(_task.subtaskList.expanded, subtasks, _task, 
+                _stateManager.selectionAddTo);
 
-            if (_task.subtaskList.expanded) {
-                subtasksPlusPath.setAttribute("d", "M17,13H7V11H17M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2Z");
-            } else {
-                subtasksPlusPath.setAttribute("d", "M17,13H13V17H11V13H7V11H11V7H13V11H17M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2Z");
-            }
+            // _task.subtaskList.expanded = !_task.subtaskList.expanded;
+            // expandCard(_task.subtaskList, subtasks);
+
+            // if (_task.subtaskList.expanded) {
+            //     subtasksPlusPath.setAttribute("d", "M17,13H7V11H17M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2Z");
+            // } else {
+            //     subtasksPlusPath.setAttribute("d", "M17,13H13V17H11V13H7V11H11V7H13V11H17M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2Z");
+            // }
         });
     } else {
         subtasks.remove();
@@ -218,19 +232,22 @@ export function createCard(_task, _stateManager) {
         }
     }
 
-    expandCard(_task, card);
-    expandCard(_task, subtasks);
+    //expandCard(_task, card);
+    //expandCard(_task, subtasks);
 
     taskExpandSvg.addEventListener("click", _event => {
         if (_stateManager.currentlyEditing) return;
         _task.expanded = !_task.expanded;
-        expandCard(_task, card);
+        updateTaskExpandView(taskExpandPath, card, _task);
         
-        if (_task.expanded) {
-            taskExpandPath.setAttribute("d", "M12,22A10,10 0 0,1 2,12A10,10 0 0,1 12,2A10,10 0 0,1 22,12A10,10 0 0,1 12,22M17,14L12,9L7,14H17Z");
-        } else {
-            taskExpandPath.setAttribute("d", "M12,2A10,10 0 0,1 22,12A10,10 0 0,1 12,22A10,10 0 0,1 2,12A10,10 0 0,1 12,2M7,10L12,15L17,10H7Z");
-        }
+        // _task.expanded = !_task.expanded;
+        // expandCard(_task, card);
+        
+        // if (_task.expanded) {
+        //     taskExpandPath.setAttribute("d", "M12,22A10,10 0 0,1 2,12A10,10 0 0,1 12,2A10,10 0 0,1 22,12A10,10 0 0,1 12,22M17,14L12,9L7,14H17Z");
+        // } else {
+        //     taskExpandPath.setAttribute("d", "M12,2A10,10 0 0,1 22,12A10,10 0 0,1 12,22A10,10 0 0,1 2,12A10,10 0 0,1 12,2M7,10L12,15L17,10H7Z");
+        // }
     });
 
     hDiv.addEventListener("mouseover", _e => {
@@ -257,6 +274,35 @@ export function createCard(_task, _stateManager) {
         task: card,
         subtasks: subtasks
     };
+}
+
+function updateTaskExpandView(_svgPath, _card, _task) {
+    expandCard(_task, _card);
+    
+    if (_task.expanded) {
+        _svgPath.setAttribute("d", "M12,22A10,10 0 0,1 2,12A10,10 0 0,1 12,2A10,10 0 0,1 22,12A10,10 0 0,1 12,22M17,14L12,9L7,14H17Z");
+    } else {
+        _svgPath.setAttribute("d", "M12,2A10,10 0 0,1 22,12A10,10 0 0,1 12,22A10,10 0 0,1 2,12A10,10 0 0,1 12,2M7,10L12,15L17,10H7Z");
+    }
+}
+
+function setSubtaskExpandView(_expanded, _card, _task, _recursive) {
+    let subtasksPlusPath = _card.querySelector(".subtasks-plus-img > path");
+    _task.subtaskList.expanded = _expanded;
+    expandCard(_task.subtaskList, _card);
+    
+    if (_task.subtaskList.expanded) {
+        subtasksPlusPath.setAttribute("d", "M17,13H7V11H17M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2Z");
+    } else {
+        subtasksPlusPath.setAttribute("d", "M17,13H13V17H11V13H7V11H11V7H13V11H17M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2Z");
+    }
+
+    if (_recursive) {
+        for (let task of _task.subtaskList.tasks) {
+            let subcard = _card.querySelector(`.subtasks.id-${task.id}`);
+            setSubtaskExpandView(_expanded, subcard, task, _recursive);
+        }
+    }
 }
 
 export function freeze() {
@@ -295,7 +341,7 @@ export function getTaskIdAtPos(_x, _y) {
             let idEnd = _elem.className.indexOf(" ", idPos);
             if (idEnd < 0) idEnd = _elem.className.length;
             taskFound = true;
-            id = Number(_elem.className.slice(idPos + 3, idEnd))
+            id = Number(_elem.className.slice(idPos + 3, idEnd));
         } else if (_elem.classList.contains("task-expand-img")) {
             return -1;
         }
@@ -320,7 +366,7 @@ function createCardContainerLabel(_text, _classes) {
     return label;
 }
 
-function expandCard(_task, _div, _subDiv) {
+function expandCard(_task, _div) {
     if (_task.expanded) {
         _div.classList.remove("collapsed");
         _div.classList.add("expanded");
@@ -366,6 +412,21 @@ function createInputBox(_task, _stateManager, _body) {
     let progressField = createRadioField("progress-radio", _task.progress, progressList);
     cardInput.appendChild(progressField);
 
+    let progressCheck = document.createElement("input");
+    progressCheck.setAttribute("type", "checkbox");
+    if (_task.useProgressFromSubtasks) {
+        progressCheck.setAttribute("checked", "checked");
+    }
+    progressCheck.setAttribute("id", "progress-check");
+    progressCheck.setAttribute("name", "progress-check");
+    let progressCheckLabel = document.createElement("label");
+    progressCheckLabel.setAttribute("for", "progress-check");
+    progressCheckLabel.textContent = "Set progress from subtasks";
+    cardInput.appendChild(progressCheck);
+    cardInput.appendChild(progressCheckLabel);
+
+    updateProgressField(progressCheck, progressField);
+
     let notesInput = document.createElement("textarea");
     notesInput.textContent = _task.notes;
     cardInput.appendChild(notesInput);
@@ -384,6 +445,10 @@ function createInputBox(_task, _stateManager, _body) {
     cancel.classList.add("confirm-edit-img");
     buttonDiv.appendChild(cancel);
 
+    progressCheck.addEventListener("change", _e => {
+        updateProgressField(progressCheck, progressField);
+    });
+
     confirm.addEventListener("click", _event => {
         _task.currentlyEditing = false;
         _stateManager.currentlyEditing = false;
@@ -394,8 +459,19 @@ function createInputBox(_task, _stateManager, _body) {
         _task.updateDue();
         _task.description = descInput.value;
         _task.priority = getRadioValue(priorityField);
-        _task.progress = getRadioValue(progressField);
+        _task.useProgressFromSubtasks = progressCheck.checked;
+
+        if (_task.useProgressFromSubtasks) {
+            _task.progress = _task.getProgressRecursive();
+        } else {
+            _task.progress = getRadioValue(progressField);
+        }
+
         _task.notes = notesInput.value;
+        _task.expanded = _task.hasContent();
+
+        // let subtaskProgress = _task.getProgressRecursive();
+        // console.log("subtaskProgress: " + subtaskProgress);
 
         cardInput.remove();
         _task.refreshDom(false);
@@ -407,6 +483,14 @@ function createInputBox(_task, _stateManager, _body) {
         
         cardInput.remove();
     });
+}
+
+function updateProgressField(_check, _field) {
+    if (_check.checked) {
+        _field.setAttribute("disabled", "disabled");
+    } else {
+        _field.removeAttribute("disabled");
+    }
 }
 
 function createRadioField(_name, _defaultValue, _labelArr) {

@@ -37,6 +37,11 @@ export default class {
     menuPosOffset = { x: -4, y: -1 };
     menuWidth;
     menuHeight;
+    initTime;
+    // postInitDelay sets a delay on when menu items can be triggered after menu
+    // init. This provides a safeguard against accidentally catching a click that
+    // opened the menu.
+    postInitDelay = 200;
     html;
 
     constructor (_itemTexts, _functions) {
@@ -73,7 +78,9 @@ export default class {
         });
 
         document.addEventListener("mousedown", _e => {
-            if (this.isVisible) {
+            if (this.isVisible && new Date().getTime() - this.initTime > 
+                    this.postInitDelay) {
+                console.log("MENU CLICK");
                 let menuSelection = this.getHighlighted();
                 let menuMouseOver = document.elementsFromPoint(_e.pageX, _e.pageY);
     
@@ -128,6 +135,8 @@ export default class {
         //this.menuWidth = width + this.borderSize * 2 - this.menuMargin * 2;
         this.menuWidth = width + this.borderSize * 2 - this.menuMargin * 2;
         this.menuHeight = height + this.borderSize * 2 - this.menuMargin * 2;
+
+        this.initTime = new Date().getTime();
     }
 
     buttonDown(_x, _y) {
