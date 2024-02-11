@@ -4,6 +4,8 @@ const taskBin = document.querySelector(".task-bin");
 const priorityList = [ "N/A", "Unimportant", "Important", "Urgent" ];
 const progressList = [ "N/A", "Not started", "In progress", "Complete" ];
 
+export let frozen = false;
+
 export function createCard(_task, _stateManager) {
     // title;
     // due;
@@ -37,6 +39,10 @@ export function createCard(_task, _stateManager) {
     let card = document.createElement("div");
     card.classList.add("task", `id-${_task.id}`);
     card.setAttribute("style", indentStr);
+
+    if (_task.selected) {
+        card.classList.add("selected");
+    }
 
     if (neighborDiv) {
         neighborDiv.insertAdjacentElement("beforebegin", card);
@@ -204,23 +210,12 @@ export function createCard(_task, _stateManager) {
             _task.subtaskList.expanded = !_task.subtaskList.expanded;
             setSubtaskExpandView(_task.subtaskList.expanded, subtasks, _task, 
                 _stateManager.selectionAddTo);
-
-            // _task.subtaskList.expanded = !_task.subtaskList.expanded;
-            // expandCard(_task.subtaskList, subtasks);
-
-            // if (_task.subtaskList.expanded) {
-            //     subtasksPlusPath.setAttribute("d", "M17,13H7V11H17M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2Z");
-            // } else {
-            //     subtasksPlusPath.setAttribute("d", "M17,13H13V17H11V13H7V11H11V7H13V11H17M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2Z");
-            // }
         });
     } else {
         subtasks.remove();
         card.insertAdjacentElement("afterend", subtasks);
         let subtasksHeader = subtasks.querySelector(".subtasks-header");
         let subtasksText = subtasks.querySelector(".subtasks-text");
-        console.log(subtasksHeader);
-        
         
         subtasksText.textContent = `${_task.subtasks.length} 
             ${_task.subtasks.length == 1 ? "subtask" : "subtasks"}`;
@@ -239,15 +234,6 @@ export function createCard(_task, _stateManager) {
         if (_stateManager.currentlyEditing) return;
         _task.expanded = !_task.expanded;
         updateTaskExpandView(taskExpandPath, card, _task);
-        
-        // _task.expanded = !_task.expanded;
-        // expandCard(_task, card);
-        
-        // if (_task.expanded) {
-        //     taskExpandPath.setAttribute("d", "M12,22A10,10 0 0,1 2,12A10,10 0 0,1 12,2A10,10 0 0,1 22,12A10,10 0 0,1 12,22M17,14L12,9L7,14H17Z");
-        // } else {
-        //     taskExpandPath.setAttribute("d", "M12,2A10,10 0 0,1 22,12A10,10 0 0,1 12,22A10,10 0 0,1 2,12A10,10 0 0,1 12,2M7,10L12,15L17,10H7Z");
-        // }
     });
 
     hDiv.addEventListener("mouseover", _e => {
@@ -306,10 +292,12 @@ function setSubtaskExpandView(_expanded, _card, _task, _recursive) {
 }
 
 export function freeze() {
+    frozen = true;
     taskBin.classList.add("freeze");
 }
 
 export function thaw() {
+    frozen = false;
     taskBin.classList.remove("freeze");
 }
 
@@ -380,6 +368,10 @@ function expandCard(_task, _div) {
 
 function createInputBox(_task, _stateManager, _body) {
     if (_stateManager.currentlyEditing) return;
+    freeze();
+    let card = _body.querySelector(`.task.id-${_task.id}`);
+    card.classList.add("editing");
+
     _task.currentlyEditing = true;
     _stateManager.currentlyEditing = true;
 
@@ -474,6 +466,8 @@ function createInputBox(_task, _stateManager, _body) {
         // console.log("subtaskProgress: " + subtaskProgress);
 
         cardInput.remove();
+        //thaw();
+        card.classList.remove("editing");
         _task.refreshDom(false);
     });
 
@@ -482,6 +476,8 @@ function createInputBox(_task, _stateManager, _body) {
         _stateManager.currentlyEditing = false;
         
         cardInput.remove();
+        card.classList.remove("editing");
+        //thaw();
     });
 }
 

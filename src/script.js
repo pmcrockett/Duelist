@@ -45,6 +45,7 @@ class Task {
     subtaskList;
     supertaskList;
     expanded;
+    selected;
     domDiv;
     static lastId = -1;
 
@@ -58,6 +59,7 @@ class Task {
         this.priority = _priority || 0;
         this.progress = _progress || 0;
         this.notes = _notes || "";
+        this.selected = false;
 
         if (_supertaskList) {
             _supertaskList.add(this);
@@ -86,6 +88,7 @@ class Task {
             this.description, this.priority, this.progress, this.notes, 
             null, true);
         cloned.expanded = this.expanded;
+        cloned.selected = false;
         //cloned.expanded = false;
         cloned.useProgressFromSubtasks = this.useProgressFromSubtasks;
 
@@ -369,11 +372,9 @@ class TaskList {
         let idTask = null;
 
         for (let task of this.tasks) {
-            console.log("CHECKING TASK ID " + task.id);
             if (task.id == _id) {
                 return task;
             } else if (_recursive && task.subtaskList.hasTasks()) {
-                console.log("LOOKING RECURSIVELY");
                 idTask = task.subtaskList.getTaskById(_id, _recursive);
                 if (idTask) return idTask;
             }
@@ -420,20 +421,29 @@ class TaskList {
 let stateManager = (function() {
     let currentlyEditing = false;
     let selectionAddTo = false;
+    let selectionMass = false;
 
 
-    let setSelection = function(_state, _e) {
+    let setSelectionAddTo = function(_state, _e) {
         if (_e.key == "Control") {
             stateManager.selectionAddTo = _state;
         }
     }
 
+    let setSelectionMass = function(_state, _e) {
+        if (_e.key == "Shift") {
+            stateManager.selectionMass = _state;
+        }
+    }
+
     document.addEventListener("keydown", _e => {
-        setSelection.bind(this, true, _e)();
+        setSelectionAddTo.bind(this, true, _e)();
+        setSelectionMass.bind(this, true, _e)();
     });
     
     document.addEventListener("keyup", _e => {
-        setSelection.bind(this, false, _e)();
+        setSelectionAddTo.bind(this, false, _e)();
+        setSelectionMass.bind(this, false, _e)();
     });
 
 
@@ -607,6 +617,7 @@ let selection = (function() {
 
     let add = function(_task) {
         if (!contains(_task)) {
+            _task.selected = true;
             selected.push(_task);
             dom.select(_task.id);
         }
@@ -614,6 +625,7 @@ let selection = (function() {
 
     let addExclusive = function(_task) {
         clear();
+        _task.selected = true;
         add(_task);
     };
 
@@ -622,6 +634,7 @@ let selection = (function() {
 
         if (idx >= 0) {
             selected.splice(idx, 1);
+            _task.selected = false;
             dom.unselect(_task.id);
 
             return true;
@@ -632,31 +645,61 @@ let selection = (function() {
 
     let clear = function() {
         for (let task of selected) {
+            task.selected = false;
             dom.unselect(task.id);
         }
 
         selected.splice(0, selected.length);
-        console.log(selected.length);
     };
 
     let contains = function(_task) {
         return selected.indexOf(_task) >= 0;
     };
 
+    let updateSelection = function(_task) {
+        if (stateManager.selectionMass) {
+            if (!selection.selected.length) {
+                selection.addExclusive(_task);
+            } else {
+                let idOrder = taskList.getIdOrder(true);
+                let startIdx = idOrder.indexOf(selection.selected[0].id);
+                let endIdx = idOrder.indexOf(_task.id);
+                
+                if (endIdx < startIdx) {
+                    let buffer = startIdx;
+                    startIdx = endIdx;
+                    endIdx = buffer;
+                }
+
+                // Ensure we always retain the same first selected task.
+                selection.addExclusive(selection.selected[0]);
+
+                for (let i = startIdx; i <= endIdx; i++) {
+                    if (idOrder[i] != selection.selected[0].id) {
+                        selection.add(taskList.getTaskById(idOrder[i], true));
+                    }
+                }
+            }
+        // Add clicked task to selection.
+        } else if (stateManager.selectionAddTo) {
+            if (selection.contains(_task)) {
+                selection.remove(_task);
+            } else {
+                selection.add(_task);
+            }
+        // Select only clicked task.
+        } else {
+            selection.addExclusive(_task);
+        }
+    }
+
     let triggerMenu = function(_x, _y, _selectionAddTo) {
         let task = taskList.getTaskById(dom.getTaskIdAtPos(_x, _y), true);
     
-        if (task) {
-            if (_selectionAddTo) {
-                selection.add(task);
-            } else {
-                selection.addExclusive(task);
-                console.log(selection.selected);
-            }
+        if (!selected.includes(task)) {
+            updateSelection(task);
         }
-    
-        console.log(selection.selected.length);
-    
+
         if (selection.selected.length) {
             dom.freeze();
             //selection.add(task);
@@ -702,6 +745,7 @@ let selection = (function() {
         remove,
         clear,
         contains,
+        updateSelection,
         triggerMenu
     }
 })();
@@ -724,7 +768,6 @@ taskList.tasks.forEach(_elem => {
     _elem.log();
 });
 
-console.log("about to refresh");
 taskList.refreshDom(true);
 //copier.paste(taskList.tasks[0].subtasks[0].subtasks[0].subtasks[1]);
 //copier.paste(taskList, 0);
@@ -794,21 +837,29 @@ document.addEventListener("contextmenu", (_e) => {
 
 document.addEventListener("click", _e => {
     let task = taskList.getTaskById(dom.getTaskIdAtPos(_e.pageX, _e.pageY), true);
-    dom.thaw();
-    
-    if (task) {
-        console.log(stateManager);
-        if (stateManager.selectionAddTo) {
-            if (selection.contains(task)) {
-                selection.remove(task);
-            } else {
-                selection.add(task);
-            }
+    let underMouse = document.elementsFromPoint(_e.pageX, _e.pageY);
+
+    if (!stateManager.currentlyEditing && !dom.frozen) {        
+        if (task) {
+            selection.updateSelection(task);
         } else {
-            selection.addExclusive(task);
+            let needClear = true;
+
+            for (let elem of underMouse) {
+                if (elem.classList.contains("task-expand-img") ||
+                elem.classList.contains("subtasks-plus-img")) {
+                    needClear = false;
+                    break;
+                }
+            }
+
+            if (needClear) {
+                selection.clear();
+            }
         }
-    } else {
-        selection.clear();
+    } else if (!stateManager.currentlyEditing) {
+        dom.thaw();
+        console.log(selection.selected);
     }
 });
 
@@ -831,14 +882,8 @@ document.addEventListener("touchstart", _e => {
     touchRecord.pos.push({ x: _e.touches[0].pageX, y: _e.touches[0].pageY });
 
     if (touchRecord.time[0] && touchRecord.time[1] - touchRecord.time[0]< 300) {
-        console.log("DOUBLE TAP");
-        console.log(touchRecord.time);
-        console.log(touchRecord.pos);
-        console.log(_e);
-
         if (Math.abs(touchRecord.pos[1].x - touchRecord.pos[0].x) < 40 &&
                 Math.abs(touchRecord.pos[1].y - touchRecord.pos[0].y) < 40) {
-            console.log("DOUBLE TAP IN POSITION");
             selection.triggerMenu(touchRecord.pos[1].x, touchRecord.pos[1].y,
                 stateManager.selectionAddTo);
         }
@@ -847,4 +892,10 @@ document.addEventListener("touchstart", _e => {
 
 document.addEventListener("touchend", _e => {
 
+});
+
+document.addEventListener("keydown", _e => {
+    if (_e.key == "e") {
+        console.log(selection.selected);
+    }
 });

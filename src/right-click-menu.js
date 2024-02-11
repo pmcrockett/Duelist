@@ -80,7 +80,6 @@ export default class {
         document.addEventListener("mousedown", _e => {
             if (this.isVisible && new Date().getTime() - this.initTime > 
                     this.postInitDelay) {
-                console.log("MENU CLICK");
                 let menuSelection = this.getHighlighted();
                 let menuMouseOver = document.elementsFromPoint(_e.pageX, _e.pageY);
     
@@ -159,7 +158,6 @@ export default class {
 
         if (_y + this.menuPosOffset.y + this.menuHeight + 1> docHeight + window.scrollY) {
             yOffset =  docHeight + window.scrollY - (_y + this.menuPosOffset.y + this.menuHeight + 1);
-            console.log(docHeight + window.scrollY)
         }
 
         this.svg.setAttribute("transform", `translate(${_x - this.menuMargin + 
