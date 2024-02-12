@@ -415,6 +415,11 @@ class TaskList {
         this.tasks.forEach(_task => {
             _task.refreshDom(_recursive);
         });
+
+        for (let i = 0; i < this.tasks.length; i++) {
+            this.tasks[i].refreshDom(_recursive);
+            // dom.setTaskZDepth(this.tasks[i], 500 - i);
+        }
     }
 }
 
