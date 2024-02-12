@@ -696,7 +696,7 @@ let selection = (function() {
     let triggerMenu = function(_x, _y, _selectionAddTo) {
         let task = taskList.getTaskById(dom.getTaskIdAtPos(_x, _y), true);
     
-        if (!selected.includes(task)) {
+        if (task && !selected.includes(task)) {
             updateSelection(task);
         }
 

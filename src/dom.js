@@ -72,7 +72,7 @@ export function createCard(_task, _stateManager) {
     titleContainer.appendChild(h2);
 
     let svg = createSvg("M12,2C6.47,2 2,6.47 2,12C2,17.53 6.47,22 12,22C17.53,22 22,17.53 22,12C22,6.47 17.53,2 12,2M15.1,7.07C15.24,7.07 15.38,7.12 15.5,7.23L16.77,8.5C17,8.72 17,9.07 16.77,9.28L15.77,10.28L13.72,8.23L14.72,7.23C14.82,7.12 14.96,7.07 15.1,7.07M13.13,8.81L15.19,10.87L9.13,16.93H7.07V14.87L13.13,8.81Z", 
-        "Edit task");
+        "Edit task", true);
     svg.classList.add("edit-task-img");
     hDiv.appendChild(svg);
 
@@ -90,7 +90,7 @@ export function createCard(_task, _stateManager) {
         hDiv.appendChild(dueTime);
     }
 
-    let taskExpandSvg = createSvg("", "Expand");
+    let taskExpandSvg = createSvg("", "Expand", true);
     taskExpandSvg.classList.add("task-expand-img");
     hDiv.appendChild(taskExpandSvg);
 
@@ -98,7 +98,7 @@ export function createCard(_task, _stateManager) {
         taskExpandSvg.classList.add("hidden");
     }
 
-    let taskExpandPath = taskExpandSvg.querySelector("path");
+    let taskExpandPath = taskExpandSvg.querySelector("path:not(.bg-img)");
     updateTaskExpandView(taskExpandPath, card, _task);
 
     // let spacer = document.createElement("div");
@@ -184,11 +184,11 @@ export function createCard(_task, _stateManager) {
         subtasksHeader.setAttribute("style", indentStr)
         subtasks.appendChild(subtasksHeader);
 
-        let subtasksPlusSvg = createSvg("", "Subtasks");
+        let subtasksPlusSvg = createSvg("", "Subtasks", true);
         subtasksPlusSvg.classList.add("subtasks-plus-img");
         subtasksHeader.appendChild(subtasksPlusSvg);
 
-        let subtasksPlusPath = subtasksPlusSvg.querySelector("path");
+        let subtasksPlusPath = subtasksPlusSvg.querySelector("path:not(.bg-img)");
         setSubtaskExpandView(_task.subtaskList.expanded, subtasks, _task, false);
 
         let subtasksText = document.createElement("div");
@@ -273,7 +273,7 @@ function updateTaskExpandView(_svgPath, _card, _task) {
 }
 
 function setSubtaskExpandView(_expanded, _card, _task, _recursive) {
-    let subtasksPlusPath = _card.querySelector(".subtasks-plus-img > path");
+    let subtasksPlusPath = _card.querySelector(".subtasks-plus-img > path:not(.bg-img)");
     _task.subtaskList.expanded = _expanded;
     expandCard(_task.subtaskList, _card);
     
@@ -394,6 +394,8 @@ function createInputBox(_task, _stateManager, _body) {
     titleInput.setAttribute("id", "input-title");
     titleInput.setAttribute("value", _task.title);
     titleFieldContainer.appendChild(titleInput);
+    titleInput.focus();
+    titleInput.setSelectionRange(titleInput.value.length, titleInput.value.length);
 
     let dueContainer = document.createElement("div");
     dueContainer.classList.add("due-container", "input-container");
@@ -520,12 +522,12 @@ function createInputBox(_task, _stateManager, _body) {
     cardInput.appendChild(buttonDiv);
 
     let confirm = createSvg("M12 2C6.5 2 2 6.5 2 12S6.5 22 12 22 22 17.5 22 12 17.5 2 12 2M10 17L5 12L6.41 10.59L10 14.17L17.59 6.58L19 8L10 17Z",
-        "Confirm");
+        "Confirm", true);
     confirm.classList.add("confirm-edit-img");
     buttonDiv.appendChild(confirm);
 
     let cancel = createSvg("M9,7L11,12L9,17H11L12,14.5L13,17H15L13,12L15,7H13L12,9.5L11,7H9M12,2A10,10 0 0,1 22,12A10,10 0 0,1 12,22A10,10 0 0,1 2,12A10,10 0 0,1 12,2Z",
-        "Cancel");
+        "Cancel", true);
     cancel.classList.add("confirm-edit-img");
     buttonDiv.appendChild(cancel);
 
@@ -619,14 +621,19 @@ function getRadioValue(_fieldset) {
     return -1;
 }
 
-function createSvg(_path, _title) {
+function createSvg(_path, _title, _useBg) {
     let svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
     svg.setAttribute("viewBox", "0 0 24 24");
     
     let title = document.createElementNS("http://www.w3.org/2000/svg", "title");
     title.textContent = _title;
     svg.appendChild(title);
-
+    if (_useBg) {
+        let bgPath = document.createElementNS("http://www.w3.org/2000/svg", "path");
+        bgPath.setAttribute("d", "M12,4A10,10 0 0,0 4,12A10,10 0 0,0 12,20A10,10 0 0,0 20,12A10,10 0 0,0 12,4Z");
+        bgPath.classList.add("bg-img");
+        svg.appendChild(bgPath);
+    }
     let path = document.createElementNS("http://www.w3.org/2000/svg", "path");
     path.setAttribute("d", _path);
     svg.appendChild(path);
@@ -647,7 +654,8 @@ function createPrioritySvg(_priority) {
         "priority-high"
     ];
 
-    let prioritySvg = createSvg(priorityPath[_priority - 1], priorityList[_priority]);
+    let prioritySvg = createSvg(priorityPath[_priority - 1], 
+        priorityList[_priority], false);
     prioritySvg.classList.add("priority-img", priorityClass[_priority - 1]);
 
     return prioritySvg;
@@ -666,7 +674,8 @@ function createProgressSvg(_progress) {
         "progress-completed"
     ];
 
-    let progressSvg = createSvg(progressPath[_progress - 1], progressList[_progress]);
+    let progressSvg = createSvg(progressPath[_progress - 1], 
+        progressList[_progress], false);
     progressSvg.classList.add("progress-img", progressClass[_progress - 1]);
 
     return progressSvg;
