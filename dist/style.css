@@ -7,7 +7,7 @@
     --card-border-hover-col: rgb(112, 6, 212);
     --card-bg-col: rgb(247, 206, 247);
     --card-bg-hover-col: rgb(248, 159, 248);
-    --card-select-col: rgb(95, 11, 95);
+    --card-select-col: rgb(252, 52, 252);
     --card-indent: 32px;
     width: 100vw;
     user-select: none;
@@ -20,21 +20,97 @@ body {
     grid-template-rows: 10vh 50vh 40vh;
     justify-content: center;
     align-content: start;
+    /* width: 100vw; */
 }
 
 .card-input {
-    background-color: burlywood;
+    background-color: var(--card-bg-col);
     grid-area: 2 / 2 / 3 / 3;
     border-radius: 10px;
     display: grid;
+    grid-template-columns: 1fr;
     grid-auto-rows: min-content;
-    z-index: 3;
+    justify-items: stretch;
+    align-content: space-evenly;
+    z-index: 4;
+    min-width: 264px;
+    height: min-content;
+    filter: drop-shadow(2px 2px 2px black);
+}
+
+input, textarea, fieldset {
+    /* border-radius: 4px;
+    border-width: 1px;
+    border-color: var(--card-border-col); */
+    border-style: none;
+
+    padding: 10px;
+    filter: drop-shadow(1px 1px 1px black);
+}
+
+.field-container {
+    margin-top: 8px;
+    margin-left: 8px;
+    margin-right: 8px;
+    /* width: auto; */
+    display: grid;
+    grid-template-rows: min-content;
+    grid-auto-flow: row;
+    grid-auto-rows: auto;
+}
+
+textarea {
+    resize: vertical;
+    min-height: 80px;;
 }
 
 fieldset {
+    background-color: white;
+    font-size: smaller;
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    column-gap: 8px;
+    margin-bottom: 8px;
+    grid-template-columns: auto auto;
     grid-template-rows: 1fr 1fr 1fr;
+    align-items: center;
+    /* align-self: start; */
+    /* justify-self: center; */
+    height: min-content;
+}
+
+input[type="radio"] {
+    justify-self: end;
+}
+
+/* input[type="date"],
+input[type="time"] {
+    justify-self: center;
+} */
+
+.input-container {
+    display: grid;
+    gap: 8px;
+    grid-template-columns: 1fr 1fr;
+}
+
+.due-container {
+    grid-template-rows: min-content 1fr;
+}
+
+.radio-container {
+    grid-template-rows: min-content 1fr min-content;
+}
+
+.progress-check-container {
+    /* grid-area: 3 / 2 / 4 / 3; */
+    display: grid;
+    column-gap: 8px;
+    grid-template-columns: auto 1fr;
+    align-items: start;
+}
+
+input[type="checkbox"] {
+    margin-top: 2px;
 }
 
 .task-bin {
@@ -46,6 +122,7 @@ fieldset {
     border-radius: 10px;
     max-width: 400px;
     padding-bottom: 10px;
+    filter: drop-shadow(2px 2px 2px black);
 }
 
 .task.collapsed {
@@ -72,10 +149,12 @@ fieldset {
 
 .edit-task-img {
     display: none;
-    fill: var(--card-bg-hover-col);
+    /* fill: var(--card-bg-hover-col); */
+    fill: var(--card-border-col);
     width: 32px;
     height: 32px;
-    grid-area: 1 / 1 / 5 / 2;
+    grid-area: 1 / 1 / 2 / 2;
+    /* grid-area: 1 / 1 / 5 / 2; */
     justify-self: end;
     align-self: center;
 }
@@ -108,13 +187,26 @@ fieldset {
     justify-self: center;
     grid-area: 4 / 1 / 5 / 2;
     z-index: 2;
+    fill: var(--card-border-col);
+    filter: drop-shadow(3px 3px 6px black);
+}
+
+.task-bin:not(.freeze) .task-expand-img:hover, 
+.task-bin:not(.freeze) .subtasks-plus-img:hover {
+    fill: var(--card-border-hover-col);
 }
 
 .task-bin:not(.freeze) .card-header-div.hover-possible:hover > .edit-task-img {
     display: grid;
+    filter: drop-shadow(3px 3px 6px black);
+}
+
+.task-bin:not(.freeze) .edit-task-img:hover {
+    fill: var(--card-border-hover-col);
 }
 
 .input-buttons {
+    margin: 8px;
     display: grid;
     grid-auto-flow: column;
     grid-auto-columns: min-content;
@@ -125,17 +217,28 @@ fieldset {
     fill: var(--card-border-col);
     width: 32px;
     height: 32px;
+    filter: drop-shadow(1px 1px 1px black);
+}
+
+.confirm-edit-img:hover {
+    fill: var(--card-border-hover-col);
 }
 
 .card-header-div {
     display: grid;
     grid-template-columns: 1fr;
-    grid-template-rows: minmax(32px, auto) auto auto 10px;
+    grid-template-rows: 32px auto auto 4px;
     justify-content: space-between;
     justify-items: start;
     align-items: center;
+
     background-color: var(--card-border-col);
     border-radius: 10px 10px 10px 10px;
+    border-style: solid;
+    border-color: rgba(0, 0, 0, 0);
+    border-width: 4px;
+    padding: 4px 4px 0px 4px;
+    filter: drop-shadow(1px 1px 1px black);
 }
 
 .card-due-date {
@@ -147,7 +250,8 @@ fieldset {
 }
 
 .task.selected > .card-header-div  {
-    background-color: var(--card-select-col);
+    /* background-color: var(--card-select-col); */
+    border-color: var(--card-select-col);
 }
 
 .task-bin:not(.freeze) .card-header-div.hover-possible:hover,
@@ -167,26 +271,59 @@ fieldset {
 }
 
 .subtasks-plus-img {
-    height: 24px;
-    width: 24px;
+    fill: var(--card-border-col);
+    height: 28px;
+    width: 28px;
+    filter: drop-shadow(2px 2px 2px black);
 }
 
 .card-label {
     position: relative;
-    background-color: var(--card-bg-col);
-    width: min-content;
-    height: min-content;
-    top: -20px;
+    background-color: white;
+    filter: drop-shadow(1px 1px 1px black);
+    /* background-color: rgba(0, 0, 0, 0); */
+    /* border-style: solid;
+    border-width: 1px; */
+    border-radius: 3px;
+    font-size: smaller;
+    width: fit-content;
+    height: fit-content;
+    top: -24px;
     grid-area: 1 / 1 / 2 / 2;
 }
 
+.field-container > label,
+.field-container > .pseudo-label {
+    position: relative;
+    background-color: white;
+    filter: drop-shadow(1px 1px 1px black);
+    /* background-color: rgba(0, 0, 0, 0); */
+    /* border-style: solid;
+    border-width: 1px; */
+    border-radius: 3px;
+    font-size: smaller;
+    width: fit-content;
+    height: min-content;
+    top: 1px;
+    z-index: 4;
+    margin-left: 10px;
+}
+
+.progress-check-container{
+    font-size: smaller;
+    padding-left: 4px;
+
+}
+
 .card-container {
-    outline-style: solid;
-    outline-width: 1px;;
-    margin: 10px;
+    background-color: white;
+    /* outline-style: solid;
+    outline-width: 1px;; */
+    margin: 20px 10px 0px 10px;
     padding: 10px;
     display: grid;
     grid-template-rows: 0px auto;
+    filter: drop-shadow(1px 1px 1px black);
 }
 
 .info-container {
@@ -196,6 +333,7 @@ fieldset {
 
 .menu {
     overflow: hidden;
+    z-index: 3;
 }
 
 .menu-rect {

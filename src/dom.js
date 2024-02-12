@@ -379,49 +379,141 @@ function createInputBox(_task, _stateManager, _body) {
     cardInput.classList.add("card-input");
     _body.appendChild(cardInput);
 
+    let titleFieldContainer = document.createElement("div");
+    titleFieldContainer.classList.add("field-container");
+    cardInput.appendChild(titleFieldContainer);
+
+    let titleLabel = document.createElement("label");
+    titleLabel.setAttribute("for", "input-title");
+    titleLabel.textContent = "Task name";
+    titleFieldContainer.appendChild(titleLabel);
+
     let titleInput = document.createElement("input");
     titleInput.setAttribute("type", "text");
+    titleInput.setAttribute("name", "input-title");
+    titleInput.setAttribute("id", "input-title");
     titleInput.setAttribute("value", _task.title);
-    cardInput.appendChild(titleInput);
+    titleFieldContainer.appendChild(titleInput);
+
+    let dueContainer = document.createElement("div");
+    dueContainer.classList.add("due-container", "input-container");
+    cardInput.appendChild(dueContainer);
+
+    let dateFieldContainer = document.createElement("div");
+    dateFieldContainer.classList.add("field-container");
+    dueContainer.appendChild(dateFieldContainer);
+
+    let dateLabel = document.createElement("label");
+    dateLabel.setAttribute("for", "input-date");
+    dateLabel.textContent = "Due date";
+    dateFieldContainer.appendChild(dateLabel);
 
     let dateInput = document.createElement("input");
     dateInput.setAttribute("type", "date");
+    dateInput.setAttribute("name", "input-date");
+    dateInput.setAttribute("id", "input-date");
     dateInput.setAttribute("value", _task.dueDateStr);
-    cardInput.appendChild(dateInput);
+    dateFieldContainer.appendChild(dateInput);
+
+    let timeFieldContainer = document.createElement("div");
+    timeFieldContainer.classList.add("field-container");
+    dueContainer.appendChild(timeFieldContainer);
+
+    let timeLabel = document.createElement("label");
+    timeLabel.setAttribute("for", "input-time");
+    timeLabel.textContent = "Due time";
+    timeFieldContainer.appendChild(timeLabel);
 
     let timeInput = document.createElement("input");
     timeInput.setAttribute("type", "time");
+    timeInput.setAttribute("name", "input-time");
+    timeInput.setAttribute("id", "input-time");
     timeInput.setAttribute("value", _task.dueTimeStr);
-    cardInput.appendChild(timeInput);
+    timeFieldContainer.appendChild(timeInput);
+
+    let descFieldContainer = document.createElement("div");
+    descFieldContainer.classList.add("field-container");
+    cardInput.appendChild(descFieldContainer);
+
+    let descLabel = document.createElement("label");
+    descLabel.setAttribute("for", "input-desc");
+    descLabel.textContent = "Description";
+    descFieldContainer.appendChild(descLabel);
 
     let descInput = document.createElement("textarea");
+    descInput.setAttribute("name", "input-desc");
+    descInput.setAttribute("id", "input-desc");
     descInput.textContent = _task.description;
-    cardInput.appendChild(descInput);
+    descFieldContainer.appendChild(descInput);
+
+    let radioContainer = document.createElement("div");
+    radioContainer.classList.add("radio-container", "input-container");
+    cardInput.appendChild(radioContainer);
+
+    let priorityFieldContainer = document.createElement("div");
+    priorityFieldContainer.classList.add("field-container");
+    radioContainer.appendChild(priorityFieldContainer);
+
+    let priorityLabel = document.createElement("div");
+    priorityLabel.classList.add("pseudo-label");
+    priorityLabel.textContent = "Priority";
+    priorityFieldContainer.appendChild(priorityLabel);
 
     let priorityField = createRadioField("priority-radio", _task.priority, priorityList);
-    cardInput.appendChild(priorityField);
+    priorityField.setAttribute("name", "input-priority");
+    priorityField.setAttribute("id", "input-priority");
+    priorityFieldContainer.appendChild(priorityField);
+
+    let progressFieldContainer = document.createElement("div");
+    progressFieldContainer.classList.add("field-container");
+    radioContainer.appendChild(progressFieldContainer);
+
+    let progressLabel = document.createElement("div");
+    progressLabel.classList.add("pseudo-label");
+    progressLabel.textContent = "Progress";
+    progressFieldContainer.appendChild(progressLabel);
 
     let progressField = createRadioField("progress-radio", _task.progress, progressList);
-    cardInput.appendChild(progressField);
+    progressField.setAttribute("name", "input-progress");
+    progressField.setAttribute("id", "input-progress");
+    progressFieldContainer.appendChild(progressField);
+
+    let progressCheckContainer = document.createElement("div");
+    progressCheckContainer.classList.add("progress-check-container");
+    progressFieldContainer.appendChild(progressCheckContainer);
 
     let progressCheck = document.createElement("input");
     progressCheck.setAttribute("type", "checkbox");
+
     if (_task.useProgressFromSubtasks) {
         progressCheck.setAttribute("checked", "checked");
     }
+
     progressCheck.setAttribute("id", "progress-check");
     progressCheck.setAttribute("name", "progress-check");
+    progressCheck.setAttribute("id", "progress-check");
     let progressCheckLabel = document.createElement("label");
     progressCheckLabel.setAttribute("for", "progress-check");
     progressCheckLabel.textContent = "Set progress from subtasks";
-    cardInput.appendChild(progressCheck);
-    cardInput.appendChild(progressCheckLabel);
+    progressCheckContainer.appendChild(progressCheck);
+    progressCheckContainer.appendChild(progressCheckLabel);
 
     updateProgressField(progressCheck, progressField);
 
+    let notesFieldContainer = document.createElement("div");
+    notesFieldContainer.classList.add("field-container");
+    cardInput.appendChild(notesFieldContainer);
+
+    let notesLabel = document.createElement("label");
+    notesLabel.setAttribute("for", "input-notes");
+    notesLabel.textContent = "Notes";
+    notesFieldContainer.appendChild(notesLabel);
+
     let notesInput = document.createElement("textarea");
+    notesInput.setAttribute("name", "input-notes");
+    notesInput.setAttribute("id", "input-notes");
     notesInput.textContent = _task.notes;
-    cardInput.appendChild(notesInput);
+    notesFieldContainer.appendChild(notesInput);
 
     let buttonDiv = document.createElement("div");
     buttonDiv.classList.add("input-buttons");
