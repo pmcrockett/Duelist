@@ -331,6 +331,24 @@ class TaskList {
 
     }
 
+    createTask(_idx, _showInput) {
+        if (!_idx) {
+            _idx = this.tasks.length + 1;
+        }
+
+        let newTask = new Task();
+        this.add(newTask, _idx);
+        if (this.owner) {
+            this.owner.refreshDom(true);
+        } else {
+            this.refreshDom(false);
+        }
+
+        if (_showInput) {
+            dom.createInputBox(newTask, stateManager);
+        }
+    }
+
     add(_task, _idx) {
         if (_idx == null) {
             _idx = this.tasks.length;
@@ -427,7 +445,11 @@ let stateManager = (function() {
     let currentlyEditing = false;
     let selectionAddTo = false;
     let selectionMass = false;
-
+    let touch = {
+        time: [ null, null ],
+        pos: [ null, null ],
+        touchedId: [ null, null ]
+    };
 
     let setSelectionAddTo = function(_state, _e) {
         if (_e.key == "Control") {
@@ -454,7 +476,8 @@ let stateManager = (function() {
 
     return {
         currentlyEditing,
-        selectionAddTo
+        selectionAddTo,
+        touch
     }
 })();
 
@@ -495,6 +518,37 @@ let logger = (function() {
 let copier = (function() {
     const buffer = [];
 
+    let remove = function(_tasks, _recursive, _refresh) {
+        if (!(_tasks instanceof Array)) {
+            _tasks = [ _tasks ];
+        }
+
+        if (_recursive) {
+            _tasks = reduceRecursiveInput(_tasks);
+        }
+
+        for (let task of _tasks) {
+            let insertIdx = task.supertaskList.getTaskIdx(task);
+            let supertaskList = task.supertaskList;
+            let subtaskList = task.subtaskList;
+            task.delete(true);
+    
+            if (!_recursive) {
+                for (let i = 0; i < subtaskList.tasks.length; i++) {
+                    supertaskList.add(subtaskList.tasks[i], insertIdx++);
+                }
+            }
+    
+            if (_refresh) {
+                if (supertaskList.owner) {
+                    supertaskList.owner.refreshDom(true);
+                } else {
+                    supertaskList.refreshDom(true);
+                }
+            }
+        }
+    }
+
     let copy = function(_tasks, _recursive, _globalTaskList) {
         if (!(_tasks instanceof Array)) {
             _tasks = [ _tasks ];
@@ -523,31 +577,7 @@ let copier = (function() {
         }
 
         this.copy(_tasks, _recursive, _globalTaskList);
-
-        if (_recursive) {
-            _tasks = reduceRecursiveInput(_tasks);
-        }
-
-        for (let task of _tasks) {
-            let insertIdx = task.supertaskList.getTaskIdx(task);
-            let supertaskList = task.supertaskList;
-            let subtaskList = task.subtaskList;
-            task.delete(true);
-    
-            if (!_recursive) {
-                for (let i = 0; i < subtaskList.tasks.length; i++) {
-                    supertaskList.add(subtaskList.tasks[i], insertIdx++);
-                }
-            }
-    
-            if (_refresh) {
-                if (supertaskList.owner) {
-                    supertaskList.owner.refreshDom(true);
-                } else {
-                    supertaskList.refreshDom(true);
-                }
-            }
-        }
+        this.remove(_tasks, _recursive);
     }
 
     let paste = function(_taskList, _idx) {
@@ -610,6 +640,7 @@ let copier = (function() {
 
     return {
         buffer,
+        remove,
         copy,
         cut,
         paste,
@@ -709,13 +740,20 @@ let selection = (function() {
         if (task && selection.selected.length) {
             dom.freeze();
             //selection.add(task);
-            let menuTexts = [ "Copy (with subtasks)", "Copy (without subtasks)", 
-            "Cut (with subtasks)", "Cut (without subtasks)" ];
+            let menuTexts = [ "New task (above)", "New task (below)", 
+                "New task (as subtask)", "Copy (with subtasks)", 
+                "Copy (without subtasks)", "Cut (with subtasks)", 
+                "Cut (without subtasks)" ];
             let menuFunctions = [
-                function() {copier.copy(selection.selected, true, taskList)},
-                function() {copier.copy(selection.selected, false, taskList)},
-                function() {copier.cut(selection.selected, true, true, taskList)},
-                function() {copier.cut(selection.selected, false, true, taskList)}
+                function() {task.supertaskList.createTask(
+                    task.supertaskList.getTaskIdx(task), true);},
+                function() {task.supertaskList.createTask(
+                    task.supertaskList.getTaskIdx(task) + 1, true);},
+                function() {task.subtaskList.createTask(null, true);},
+                function() {copier.copy(selection.selected, true, taskList);},
+                function() {copier.copy(selection.selected, false, taskList);},
+                function() {copier.cut(selection.selected, true, true, taskList);},
+                function() {copier.cut(selection.selected, false, true, taskList);}
             ];
     
             // Only show paste option if there's something to paste.
@@ -723,25 +761,52 @@ let selection = (function() {
                 menuTexts.push("Paste (above)", "Paste (below)", "Paste (as subtask)");
                 menuFunctions.push(
                     function() {copier.paste(task.supertaskList, 
-                        task.supertaskList.getTaskIdx(task))},
+                        task.supertaskList.getTaskIdx(task));},
                     function() {copier.paste(task.supertaskList, 
-                        task.supertaskList.getTaskIdx(task) + 1)},
-                    function() {copier.paste(task.subtaskList)}
+                        task.supertaskList.getTaskIdx(task) + 1);},
+                    function() {copier.paste(task.subtaskList);}
                 );
             }
+
+            menuTexts.push("Delete (including subtasks)",
+                "Delete (not including subtasks)");
+            menuFunctions.push(function() {copier.remove(selection.selected, true, 
+                    true)},
+                function() {copier.remove(selection.selected, false, 
+                    true)}
+                );
     
             let menu = new RightClickMenu(menuTexts, menuFunctions);
             document.querySelector("body").appendChild(menu.svg);
             menu.buttonDown(_clientX, _clientY);
-        } else if (copier.buffer.length) {
+        } else {
             dom.freeze();
-            let menu = new RightClickMenu([ "Paste" ], 
-                [
-                    function() {copier.paste(taskList, taskList.tasks.length)}
-                ]);
-            document.querySelector("body").appendChild(menu.svg);
-            menu.buttonDown(_clientX, _clientY);
+            let menuTexts = [ "New task"];
+            let menuFunctions = [
+                function() {taskList.createTask(taskList.tasks.length, 
+                    true);}
+            ];
+
+            if (copier.buffer.length) {
+                menuTexts.push("Paste");
+                menuFunctions.push(function() {copier.paste(taskList, 
+                    taskList.tasks.length)});
+            }
+
+            let menu = new RightClickMenu(menuTexts, menuFunctions);
+        document.querySelector("body").appendChild(menu.svg);
+        menu.buttonDown(_clientX, _clientY);
         }
+        
+        // else if (copier.buffer.length) {
+        //     dom.freeze();
+        //     let menu = new RightClickMenu([ "New task", "Paste" ], 
+        //         [
+        //             function() {copier.paste(taskList, taskList.tasks.length)}
+        //         ]);
+        //     document.querySelector("body").appendChild(menu.svg);
+        //     menu.buttonDown(_clientX, _clientY);
+        // }
     }
 
     return {
@@ -882,26 +947,30 @@ document.addEventListener("mousedown", _e => {
     }
 });
 
-let touchRecord = {
-    time: [ null, null ],
-    pos: [ null, null ]
-};
-
 document.addEventListener("touchstart", _e => {
-    touchRecord.time.splice(0, 1);
-    touchRecord.time.push(new Date().getTime());
+    stateManager.touch.time.splice(0, 1);
+    stateManager.touch.time.push(new Date().getTime());
 
-    touchRecord.pos.splice(0, 1);
-    // touchRecord.pos.push({ x: _e.touches[0].pageX, y: _e.touches[0].pageY });
-    touchRecord.pos.push({ x: _e.touches[0].clientX, y: _e.touches[0].clientY });
+    stateManager.touch.pos.splice(0, 1);
+    // touch.pos.push({ x: _e.touches[0].pageX, y: _e.touches[0].pageY });
+    stateManager.touch.pos.push({ x: _e.touches[0].clientX, 
+        y: _e.touches[0].clientY });
 
-    if (touchRecord.time[0] && touchRecord.time[1] - touchRecord.time[0]< 300) {
-        if (Math.abs(touchRecord.pos[1].x - touchRecord.pos[0].x) < 40 &&
-                Math.abs(touchRecord.pos[1].y - touchRecord.pos[0].y) < 40) {
-            selection.triggerMenu(touchRecord.pos[1].x, touchRecord.pos[1].y,
-                stateManager.selectionAddTo);
+    if (stateManager.touch.time[0] && 
+        stateManager.touch.time[1] - stateManager.touch.time[0]< 300) {
+        if (Math.abs(stateManager.touch.pos[1].x - 
+                stateManager.touch.pos[0].x) < 40 &&
+                Math.abs(stateManager.touch.pos[1].y - 
+                stateManager.touch.pos[0].y) < 40) {
+            selection.triggerMenu(stateManager.touch.pos[1].x, 
+                stateManager.touch.pos[1].y, stateManager.selectionAddTo);
         }
     }
+
+    stateManager.touch.touchedId.splice(0, 1);
+    stateManager.touch.touchedId.push(dom.getTaskIdAtPos(_e.touches[0].clientX, 
+        _e.touches[0].clientY));
+    console.log("Set last touched to " + stateManager.touch.touchedId);
 });
 
 document.addEventListener("touchend", _e => {

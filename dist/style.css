@@ -64,7 +64,7 @@ body {
 
     justify-self: center;
     position: fixed;
-    top: 25vh;
+    top: 10vh;
 }
 
 input, textarea, fieldset {

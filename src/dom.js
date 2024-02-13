@@ -107,7 +107,7 @@ export function createCard(_task, _stateManager) {
     // card.appendChild(spacer);
 
     //if (_task.priority > 0 || _task.progress > 0 || _task.useProgressFromSubtasks) {
-        if (_task.priority > 0 || _task.progress > 0) {
+    if (_task.priority > 0 || _task.progress > 0) {
         let infoContainer = document.createElement("div");
         infoContainer.classList.add("info-container");
         card.appendChild(infoContainer);
@@ -254,9 +254,19 @@ export function createCard(_task, _stateManager) {
         return true;
     });
 
-    let htmlBody = document.querySelector("body");
-    svg.addEventListener("click", _event => {createInputBox(_task, _stateManager, 
-        htmlBody)});
+    svg.addEventListener("click", _event => {
+        // Because mouseover doesn't exist on a touchscreen, the edit boutton is
+        // revealed once the user has tapped the task's header and can only be
+        // activated once revealed. I.e. the button can only be clicked if the
+        // second-to-last touch was on the button's task's header.
+        if (_event.pointerType == "touch") {
+            if (_task.selected && _stateManager.touch.touchedId[0] == _task.id) {
+                createInputBox(_task, _stateManager);
+            }
+        } else {
+            createInputBox(_task, _stateManager);
+        }
+    });
 
     return {
         task: card,
@@ -319,8 +329,8 @@ export function unselect(_taskId) {
     }
 }
 
-export function getTaskIdAtPos(_x, _y) {
-    let underMouse = document.elementsFromPoint(_x, _y);
+export function getTaskIdAtPos(_clientX, _clientY) {
+    let underMouse = document.elementsFromPoint(_clientX, _clientY);
     let taskFound = false
     let id = -1;
 
@@ -368,10 +378,11 @@ function expandCard(_task, _div) {
     _div.classList.add("collapsed");
 }
 
-function createInputBox(_task, _stateManager, _body) {
+export function createInputBox(_task, _stateManager) {
     if (_stateManager.currentlyEditing) return;
     freeze();
-    let card = _body.querySelector(`.task.id-${_task.id}`);
+    let body = document.querySelector("body");
+    let card = body.querySelector(`.task.id-${_task.id}`);
     card.classList.add("editing");
 
     _task.currentlyEditing = true;
@@ -383,7 +394,7 @@ function createInputBox(_task, _stateManager, _body) {
 
     let cardInput = document.createElement("div");
     cardInput.classList.add("card-input");
-    _body.appendChild(cardInput);
+    body.appendChild(cardInput);
 
     let titleFieldContainer = document.createElement("div");
     titleFieldContainer.classList.add("field-container");
