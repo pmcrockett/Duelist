@@ -23,7 +23,6 @@
 // Top-level array of tasks
 
 // DOM module
-import { format } from "date-fns";
 import * as dom from "./dom.js";
 import timezoneString from "./timezone-string.js";
 import RightClickMenu from "./right-click-menu.js";

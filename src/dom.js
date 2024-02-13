@@ -1,4 +1,4 @@
-import { format } from "date-fns";
+import dateFormat, { masks } from "dateformat";
 
 const taskBin = document.querySelector(".task-bin");
 const priorityList = [ "N/A", "Unimportant", "Important", "Urgent" ];
@@ -79,14 +79,16 @@ export function createCard(_task, _stateManager) {
 
     if (_task.dueDate) {
         let dueDate = document.createElement("div");
-        dueDate.textContent = `${format(_task.dueDate, "EEEE, LLLL do, yyyy")}`;
+        dueDate.textContent = `${dateFormat(_task.dueDate, "dddd, mmmm dS, yyyy")}`;
+        //dueDate.textContent = `${_task.dueDate}`;
         dueDate.classList.add("card-due-date", "card-editable");
         hDiv.appendChild(dueDate);
     }
 
     if (_task.dueTime) {
         let dueTime = document.createElement("div");
-        dueTime.textContent = `${format(_task.dueTime, "h:mm aaa")}`;
+        dueTime.textContent = `${dateFormat(_task.dueTime, "h:MM TT")}`;
+        //dueTime.textContent = `${_task.dueTime}`;
         dueTime.classList.add("card-due-time", "card-editable");
         hDiv.appendChild(dueTime);
     }
@@ -255,7 +257,7 @@ export function createCard(_task, _stateManager) {
     });
 
     svg.addEventListener("click", _event => {
-        // Because mouseover doesn't exist on a touchscreen, the edit boutton is
+        // Because mouseover doesn't exist on a touchscreen, the edit button is
         // revealed once the user has tapped the task's header and can only be
         // activated once revealed. I.e. the button can only be clicked if the
         // second-to-last touch was on the button's task's header.
