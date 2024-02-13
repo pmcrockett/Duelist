@@ -698,14 +698,15 @@ let selection = (function() {
         }
     }
 
-    let triggerMenu = function(_x, _y, _selectionAddTo) {
-        let task = taskList.getTaskById(dom.getTaskIdAtPos(_x, _y), true);
+    let triggerMenu = function(_clientX, _clientY, _selectionAddTo) {
+        let task = taskList.getTaskById(dom.getTaskIdAtPos(_clientX, 
+            _clientY), true);
     
         if (task && !selected.includes(task)) {
             updateSelection(task);
         }
 
-        if (selection.selected.length) {
+        if (task && selection.selected.length) {
             dom.freeze();
             //selection.add(task);
             let menuTexts = [ "Copy (with subtasks)", "Copy (without subtasks)", 
@@ -731,15 +732,15 @@ let selection = (function() {
     
             let menu = new RightClickMenu(menuTexts, menuFunctions);
             document.querySelector("body").appendChild(menu.svg);
-            menu.buttonDown(_x, _y);
+            menu.buttonDown(_clientX, _clientY);
         } else if (copier.buffer.length) {
             dom.freeze();
             let menu = new RightClickMenu([ "Paste" ], 
                 [
-                    function() {copier.paste(taskList)}
+                    function() {copier.paste(taskList, taskList.tasks.length)}
                 ]);
             document.querySelector("body").appendChild(menu.svg);
-            menu.buttonDown(_x, _y);
+            menu.buttonDown(_clientX, _clientY);
         }
     }
 
@@ -841,36 +842,43 @@ document.addEventListener("contextmenu", (_e) => {
 
 
 document.addEventListener("click", _e => {
-    let task = taskList.getTaskById(dom.getTaskIdAtPos(_e.pageX, _e.pageY), true);
-    let underMouse = document.elementsFromPoint(_e.pageX, _e.pageY);
+    // let task = taskList.getTaskById(dom.getTaskIdAtPos(_e.pageX, _e.pageY), true);
+    let task = taskList.getTaskById(dom.getTaskIdAtPos(_e.clientX, _e.clientY), true);
+    // let underMouse = document.elementsFromPoint(_e.pageX, _e.pageY);
+    let underMouse = document.elementsFromPoint(_e.clientX, _e.clientY);
+    
+    if (!stateManager.currentlyEditing) {
+        if (!_e.target.classList.contains("input-button")) {
+            if (task) {
+                selection.updateSelection(task);
+            } else {
+                let needClear = true;
 
-    if (!stateManager.currentlyEditing && !dom.frozen) {        
-        if (task) {
-            selection.updateSelection(task);
-        } else {
-            let needClear = true;
+                for (let elem of underMouse) {
+                    if (elem.classList.contains("task-expand-img") ||
+                    elem.classList.contains("subtasks-plus-img")) {
+                        needClear = false;
+                        break;
+                    }
+                }
 
-            for (let elem of underMouse) {
-                if (elem.classList.contains("task-expand-img") ||
-                elem.classList.contains("subtasks-plus-img")) {
-                    needClear = false;
-                    break;
+                if (needClear) {
+                    selection.clear();
                 }
             }
-
-            if (needClear) {
-                selection.clear();
-            }
         }
-    } else if (!stateManager.currentlyEditing) {
+    }
+});
+
+document.addEventListener("mouseup", _e => {
+    if (_e.button == 0 && !stateManager.currentlyEditing) {
         dom.thaw();
-        console.log(selection.selected);
     }
 });
 
 document.addEventListener("mousedown", _e => {
-    if (_e.button == 2) {
-        selection.triggerMenu(_e.pageX, _e.pageY, stateManager.selectionAddTo);
+    if (_e.button == 2 && !stateManager.currentlyEditing) {
+        selection.triggerMenu(_e.clientX, _e.clientY, stateManager.selectionAddTo);
     }
 });
 
@@ -884,7 +892,8 @@ document.addEventListener("touchstart", _e => {
     touchRecord.time.push(new Date().getTime());
 
     touchRecord.pos.splice(0, 1);
-    touchRecord.pos.push({ x: _e.touches[0].pageX, y: _e.touches[0].pageY });
+    // touchRecord.pos.push({ x: _e.touches[0].pageX, y: _e.touches[0].pageY });
+    touchRecord.pos.push({ x: _e.touches[0].clientX, y: _e.touches[0].clientY });
 
     if (touchRecord.time[0] && touchRecord.time[1] - touchRecord.time[0]< 300) {
         if (Math.abs(touchRecord.pos[1].x - touchRecord.pos[0].x) < 40 &&

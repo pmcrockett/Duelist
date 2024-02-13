@@ -35,7 +35,8 @@ export function createCard(_task, _stateManager) {
         supertaskDiv = taskBin;
     }
 
-    let indentStr = `margin-left: calc(var(--card-indent) * ${_task.depth})`;
+    let indentStr = `margin-left: calc(calc(var(--card-indent) * ${_task.depth}) + calc(var(--card-margin) * 0.5))`;
+    // let indentStr = `margin-left: 0px`;
     let card = document.createElement("div");
     card.classList.add("task", `id-${_task.id}`);
     card.setAttribute("style", indentStr);
@@ -204,7 +205,8 @@ export function createCard(_task, _stateManager) {
             subtasksHeader.classList.remove("hidden");
         }
 
-        subtasksPlusSvg.addEventListener("click", _event => {
+        // subtasksPlusSvg.addEventListener("click", _event => {
+        subtasksHeader.addEventListener("click", _event => {
             if (_stateManager.currentlyEditing) return;
 
             _task.subtaskList.expanded = !_task.subtaskList.expanded;
@@ -375,6 +377,10 @@ function createInputBox(_task, _stateManager, _body) {
     _task.currentlyEditing = true;
     _stateManager.currentlyEditing = true;
 
+    // let cardSpacer = document.createElement("div");
+    // cardSpacer.classList.add("card-spacer")
+    // _body.appendChild(cardSpacer);
+
     let cardInput = document.createElement("div");
     cardInput.classList.add("card-input");
     _body.appendChild(cardInput);
@@ -522,13 +528,13 @@ function createInputBox(_task, _stateManager, _body) {
     cardInput.appendChild(buttonDiv);
 
     let confirm = createSvg("M12 2C6.5 2 2 6.5 2 12S6.5 22 12 22 22 17.5 22 12 17.5 2 12 2M10 17L5 12L6.41 10.59L10 14.17L17.59 6.58L19 8L10 17Z",
-        "Confirm", true);
-    confirm.classList.add("confirm-edit-img");
+        "Confirm", true, "input-button");
+    confirm.classList.add("confirm-edit-img", "input-button");
     buttonDiv.appendChild(confirm);
 
     let cancel = createSvg("M9,7L11,12L9,17H11L12,14.5L13,17H15L13,12L15,7H13L12,9.5L11,7H9M12,2A10,10 0 0,1 22,12A10,10 0 0,1 12,22A10,10 0 0,1 2,12A10,10 0 0,1 12,2Z",
-        "Cancel", true);
-    cancel.classList.add("confirm-edit-img");
+        "Cancel", true, "input-button");
+    cancel.classList.add("confirm-edit-img", "input-button");
     buttonDiv.appendChild(cancel);
 
     progressCheck.addEventListener("change", _e => {
@@ -560,7 +566,7 @@ function createInputBox(_task, _stateManager, _body) {
         // console.log("subtaskProgress: " + subtaskProgress);
 
         cardInput.remove();
-        //thaw();
+        thaw();
         card.classList.remove("editing");
         _task.refreshDom(false);
     });
@@ -571,7 +577,7 @@ function createInputBox(_task, _stateManager, _body) {
         
         cardInput.remove();
         card.classList.remove("editing");
-        //thaw();
+        thaw();
     });
 }
 
@@ -621,7 +627,7 @@ function getRadioValue(_fieldset) {
     return -1;
 }
 
-function createSvg(_path, _title, _useBg) {
+function createSvg(_path, _title, _useBg, _pathClass) {
     let svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
     svg.setAttribute("viewBox", "0 0 24 24");
     
@@ -629,7 +635,7 @@ function createSvg(_path, _title, _useBg) {
     title.textContent = _title;
     svg.appendChild(title);
     if (_useBg) {
-        let bgPath = document.createElementNS("http://www.w3.org/2000/svg", "path");
+        var bgPath = document.createElementNS("http://www.w3.org/2000/svg", "path");
         bgPath.setAttribute("d", "M12,4A10,10 0 0,0 4,12A10,10 0 0,0 12,20A10,10 0 0,0 20,12A10,10 0 0,0 12,4Z");
         bgPath.classList.add("bg-img");
         svg.appendChild(bgPath);
@@ -637,6 +643,14 @@ function createSvg(_path, _title, _useBg) {
     let path = document.createElementNS("http://www.w3.org/2000/svg", "path");
     path.setAttribute("d", _path);
     svg.appendChild(path);
+
+    if (_pathClass != null) {
+        path.classList.add(_pathClass);
+        
+        if (_useBg) {
+            bgPath.classList.add(_pathClass);
+        }
+    }
 
     return svg;
 }

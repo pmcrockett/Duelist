@@ -81,7 +81,7 @@ export default class {
             if (this.isVisible && new Date().getTime() - this.initTime > 
                     this.postInitDelay) {
                 let menuSelection = this.getHighlighted();
-                let menuMouseOver = document.elementsFromPoint(_e.pageX, _e.pageY);
+                let menuMouseOver = document.elementsFromPoint(_e.clientX, _e.clientY);
     
                 if (menuSelection && menuMouseOver.includes(menuSelection.rect)) {
                     this.activateSelection();
@@ -138,7 +138,7 @@ export default class {
         this.initTime = new Date().getTime();
     }
 
-    buttonDown(_x, _y) {
+    buttonDown(_clientX, _clientY) {
         if (this.isVisible) this.erase();
         this.isVisible = true;
         this.svg.appendChild(this.group);
@@ -146,24 +146,23 @@ export default class {
 
         const docWidth = this.html.clientWidth;
         const docHeight = this.html.clientHeight;
-        window.scrollX;
-        window.scrollY;
-        window.view
 
+        // Adjustment values if the menu extends off the screen.
         let xOffset = 0;
         let yOffset = 0;
-        if (_x + this.menuPosOffset.x + this.menuWidth + 1> docWidth + window.scrollX) {
-            xOffset =  docWidth + window.scrollX - (_x + this.menuPosOffset.x + this.menuWidth + 1); 
+
+        if (_clientX + this.menuPosOffset.x + this.menuWidth + 1 > docWidth) {
+            xOffset =  docWidth - (_clientX + this.menuPosOffset.x + this.menuWidth + 1); 
         }
 
-        if (_y + this.menuPosOffset.y + this.menuHeight + 1> docHeight + window.scrollY) {
-            yOffset =  docHeight + window.scrollY - (_y + this.menuPosOffset.y + this.menuHeight + 1);
+        if (_clientY + this.menuPosOffset.y + this.menuHeight + 1 > docHeight) {
+            yOffset =  docHeight - (_clientY + this.menuPosOffset.y + this.menuHeight + 1);
         }
 
-        this.svg.setAttribute("transform", `translate(${_x - this.menuMargin + 
-            this.menuPosOffset.x + xOffset}, ${_y - this.menuMargin + 
-            this.menuPosOffset.y + yOffset})`);
-        this.updateHighlight(_x, _y);
+        this.svg.setAttribute("transform", `translate(${_clientX - this.menuMargin + 
+            this.menuPosOffset.x + xOffset + window.scrollX}, ${_clientY - this.menuMargin + 
+            this.menuPosOffset.y + yOffset + window.scrollY})`);
+        this.updateHighlight(_clientX, _clientY);
         this.buttonDownTime = performance.now();
     }
 
@@ -189,12 +188,12 @@ export default class {
             this.group, _idx, _function));
     }
 
-    updateHighlight(_mouseX, _mouseY) {
+    updateHighlight(_clientX, _clientY) {
         if (this.isVisible) {
             for (let x of this.menuItems) {
                 x.unhighlight();
             }
-            let menuMouseOver = document.elementsFromPoint(_mouseX, _mouseY);
+            let menuMouseOver = document.elementsFromPoint(_clientX, _clientY);
             for (let x of this.menuItems) {
                 if (menuMouseOver.includes(x.rect)) {
                     x.highlight();
