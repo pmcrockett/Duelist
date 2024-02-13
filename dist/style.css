@@ -25,6 +25,7 @@
     --shadow-s: drop-shadow(1px 1px 1px var(--shadow-col));
     --shadow-l: drop-shadow(2px 2px 2px var(--shadow-col));
     --shadow-x-only: drop-shadow(2px 0px 2px var(--shadow-col));
+    --input-card-max-width: 300px;
     /* width: 100vw; */
     user-select: none;
 }
@@ -59,7 +60,7 @@ body {
     /* justify-items: stretch; */
     align-content: space-evenly;
     min-width: 264px;
-    max-width: 300px;
+    max-width: var(--input-card-max-width);
     height: min-content;
     filter: var(--shadow-s);
 
@@ -77,7 +78,10 @@ input, textarea, fieldset {
     padding: 10px;
     filter: var(--shadow-s);
     outline-color: var(--card-select-col);
-    max-width: 300px;
+}
+
+input, textarea {
+    max-width: var(--input-card-max-width);
 }
 
 input:hover, textarea:hover, fieldset:hover:not([disabled]),
@@ -95,7 +99,11 @@ input:focus, textarea:focus, fieldset:focus {
     grid-template-rows: min-content;
     grid-auto-flow: row;
     grid-auto-rows: auto;
-    max-width: 300px;
+    max-width: var(--input-card-max-width);
+}
+
+.input-container > .field-container {
+    max-width: calc(var(--input-card-max-width) * 0.5);
 }
 
 textarea {
@@ -116,6 +124,7 @@ fieldset {
     /* align-self: start; */
     /* justify-self: center; */
     height: min-content;
+    max-width: calc(var(--input-card-max-width) * 0.5);
 }
 
 input[type="radio"] {
@@ -129,9 +138,9 @@ input[type="time"] {
 
 .input-container {
     display: grid;
-    column-gap: 8px;
+    /* column-gap: 8px; */
     grid-template-columns: 1fr 1fr;
-    max-width: 300px;
+    max-width: var(--input-card-max-width);
     /* display: flex;
     flex-wrap: wrap;
     justify-content: center; */
