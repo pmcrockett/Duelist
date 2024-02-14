@@ -26,6 +26,10 @@
     --shadow-l: drop-shadow(2px 2px 2px var(--shadow-col));
     --shadow-x-only: drop-shadow(2px 0px 2px var(--shadow-col));
     --input-card-max-width: 300px;
+    --input-card-margin: 8px;
+    --input-field-width: calc(var(--input-card-max-width) - 
+        calc(var(--input-card-margin * 2)));
+    --input-field-half-width: calc(var(--input-field-width) * 0.5);
     /* width: 100vw; */
     user-select: none;
 }
@@ -63,7 +67,6 @@ body {
     max-width: var(--input-card-max-width);
     height: min-content;
     filter: var(--shadow-s);
-
     justify-self: center;
     position: fixed;
     top: 10vh;
@@ -81,7 +84,7 @@ input, textarea, fieldset {
 }
 
 input, textarea {
-    max-width: var(--input-card-max-width);
+    max-width: var(--input-field-width);
 }
 
 input:hover, textarea:hover, fieldset:hover:not([disabled]),
@@ -99,11 +102,12 @@ input:focus, textarea:focus, fieldset:focus {
     grid-template-rows: min-content;
     grid-auto-flow: row;
     grid-auto-rows: auto;
-    max-width: var(--input-card-max-width);
+    max-width: var(--input-field-width);
+    /* width: 150px; */
 }
 
 .input-container > .field-container {
-    max-width: calc(var(--input-card-max-width) * 0.5);
+    max-width: var(--input-field-half-width);
 }
 
 textarea {
@@ -124,7 +128,7 @@ fieldset {
     /* align-self: start; */
     /* justify-self: center; */
     height: min-content;
-    max-width: calc(var(--input-card-max-width) * 0.5);
+    max-width: var(--input-field-half-width);
 }
 
 input[type="radio"] {
@@ -133,7 +137,7 @@ input[type="radio"] {
 
 input[type="date"],
 input[type="time"] {
-    max-width: calc(var(--input-card-max-width) * 0.5);
+    max-width: var(--input-field-half-width);
 }
 
 .input-container {
