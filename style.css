@@ -139,6 +139,8 @@ input[type="radio"] {
 input[type="date"],
 input[type="time"] {
     max-width: var(--input-field-half-width);
+    box-sizing: border-box;
+    /* width: 100%; */
 }
 
 .input-container {
