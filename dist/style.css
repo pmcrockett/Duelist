@@ -29,7 +29,8 @@
     --input-card-margin: 8px;
     --input-field-width: calc(var(--input-card-max-width) - 
         calc(var(--input-card-margin) * 2));
-    --input-field-half-width: calc(var(--input-field-width) * 0.5);
+    --input-field-half-width: calc(calc(var(--input-card-max-width) * 0.5) - 
+        calc(var(--input-card-margin) * 2));
     /* width: 100vw; */
     user-select: none;
 }
