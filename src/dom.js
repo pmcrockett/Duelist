@@ -573,7 +573,7 @@ export function createInputBox(_task, _stateManager) {
         }
 
         _task.notes = notesInput.value;
-        _task.expanded = _task.hasContent();
+        //_task.expanded = _task.hasContent();
 
         // let subtaskProgress = _task.getProgressRecursive();
         // console.log("subtaskProgress: " + subtaskProgress);
@@ -581,6 +581,7 @@ export function createInputBox(_task, _stateManager) {
         cardInput.remove();
         thaw();
         card.classList.remove("editing");
+        _task.supertaskList.writeRootToLocalStorage();
         _task.refreshDom(false);
     });
 

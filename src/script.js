@@ -26,6 +26,7 @@
 import * as dom from "./dom.js";
 import timezoneString from "./timezone-string.js";
 import RightClickMenu from "./right-click-menu.js";
+import storageAvailable from "./storage-available.js";
 
 class Task {
     title;
@@ -180,10 +181,9 @@ class Task {
     }
 
     hasContent() {
-        return (this.description && this.description.length) ||
+        return (this.description && this.description != "") ||
             this.priority ||
             this.progress ||
-            //this.useProgressFromSubtasks ||
             (this.notes && this.notes.length)
     }
 
@@ -307,12 +307,18 @@ class Task {
         if (Task.lastId >= Number.MAX_SAFE_INTEGER) Task.lastId = -1;
         return ++Task.lastId;
     }
+
+    static resetIds() {
+        Task.lastId = -1;
+    }
 }
 
 class TaskList {
     tasks;
     owner;
     expanded = false;
+    static writeErrorShown = false;
+    static DEFAULT_KEY = "taskList";
 
     constructor(_owner, _tasks) {
         this.owner = _owner;
@@ -337,11 +343,14 @@ class TaskList {
 
         let newTask = new Task();
         this.add(newTask, _idx);
+
         if (this.owner) {
             this.owner.refreshDom(true);
         } else {
             this.refreshDom(false);
         }
+
+        this.writeRootToLocalStorage();
 
         if (_showInput) {
             dom.createInputBox(newTask, stateManager);
@@ -369,8 +378,10 @@ class TaskList {
     }
 
     removeId(_id) {
+        console.log(`Looking for id ${_id} in tasks length ${this.tasks.length}`);
         for (let i = 0; i < this.tasks.length; i++) {
             if (this.tasks[i].id == _id) {
+                console.log(`Removing id ${_id} at idx ${i}`);
                 return this.removeIdx(i);
             }
         }
@@ -420,6 +431,12 @@ class TaskList {
         return order;
     }
 
+    clear() {
+        while (this.tasks.length) {
+            this.tasks[0].delete(true);
+        }
+    }
+
     refreshDom(_recursive) {
         // To ensure proper order, remove all tasks before redrawing any of them.
         this.tasks.forEach(_task => {
@@ -437,6 +454,114 @@ class TaskList {
             this.tasks[i].refreshDom(_recursive);
             // dom.setTaskZDepth(this.tasks[i], 500 - i);
         }
+    }
+
+    // Remove all task properties that can't be stringified by JSON. These
+    // can be reconstructed on project load even without saving them.
+    cloneJson() {
+        let jsonTaskList = new TaskList(null, null);
+        jsonTaskList.expanded = this.expanded;
+
+        for (let task of this.tasks) {
+            let cloned = task.clone(false, null);
+            jsonTaskList.add(cloned);
+            cloned.id = task.id;
+            cloned.depth = task.depth;
+            cloned.dueDate = null;
+            cloned.dueTime = null;
+            cloned.subtaskList = task.subtaskList.cloneJson();
+            cloned.supertaskList = null;
+        }
+
+        return jsonTaskList;
+    }
+
+    // Rebuild taskList structure from JSON string and recalculate the values 
+    // that weren't saved in the string. Any current contents of this taskList
+    // will be deleted and replaced by the JSON data.
+    initFromJson(_jsonObj, _owner) {
+        this.owner = _owner;
+        this.expanded = _jsonObj.expanded;
+
+        this.clear();
+
+        for (let task of _jsonObj.tasks) {
+            let loadedTask = new Task(task.title, task.dueDateStr, task.dueTimeStr,
+                task.description, task.priority, task.progress, task.notes,
+                this, false);
+            loadedTask.expanded = task.expanded;
+            loadedTask.useProgressFromSubtasks = task.useProgressFromSubtasks;
+            loadedTask.subtaskList.initFromJson(task.subtaskList, loadedTask);
+        }
+    }
+
+    writeToLocalStorage(_key) {
+        if (storageAvailable("localStorage")) {
+            if (!_key) {
+                _key = TaskList.DEFAULT_KEY;
+            }
+
+            let jsonStr = JSON.stringify(this.cloneJson());
+            localStorage.setItem(_key, jsonStr);
+
+            return true;
+        } else if (!TaskList.writeErrorShown) {
+            TaskList.writeErrorShown = true;
+            alert("Your browser either doesn't support local storage or has it disabled, so your tasks will not be saved after leaving this page.");
+        }
+
+        return false;
+    }
+
+    writeRootToLocalStorage(_key) {
+        if (this.owner) {
+            this.root.writeToLocalStorage(_key);
+        } else {
+            this.writeToLocalStorage(_key);
+        }
+    }
+
+    restoreFromLocalStorage(_key) {
+        if (storageAvailable("localStorage")) {
+            if (!_key) {
+                _key = TaskList.DEFAULT_KEY;
+            }
+
+            let jsonObj = localStorage.getItem(_key);
+
+            if (jsonObj) {
+                Task.resetIds();
+                let jsonStr = JSON.parse(jsonObj);
+                this.initFromJson(jsonStr);
+                this.refreshDom(true);
+
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    clearLocalStorage(_key) {
+        if (storageAvailable("localStorage")) {
+            if (!_key) {
+                _key = TaskList.DEFAULT_KEY;
+            }
+
+            localStorage.removeItem(_key);
+        }
+    }
+
+    get root() {
+        if (this.owner) {
+            if (this.owner.chain.length) {
+                return this.owner.chain[this.owner.chain.length - 1].supertaskList;
+            } else {
+                return this.owner.supertaskList;
+            }
+        }
+
+        return this;
     }
 }
 
@@ -526,6 +651,8 @@ let copier = (function() {
             _tasks = reduceRecursiveInput(_tasks);
         }
 
+        let root = _tasks[0].supertaskList.root;
+
         for (let task of _tasks) {
             let insertIdx = task.supertaskList.getTaskIdx(task);
             let supertaskList = task.supertaskList;
@@ -546,6 +673,8 @@ let copier = (function() {
                 }
             }
         }
+
+        root.writeToLocalStorage();
     }
 
     let copy = function(_tasks, _recursive, _globalTaskList) {
@@ -598,6 +727,8 @@ let copier = (function() {
             } else {
                 _taskList.refreshDom(true);
             }
+
+            _taskList.writeRootToLocalStorage();
 
             return true;
         }
@@ -728,7 +859,8 @@ let selection = (function() {
         }
     }
 
-    let triggerMenu = function(_clientX, _clientY, _selectionAddTo) {
+    let triggerMenu = function(_clientX, _clientY, _selectionAddTo, _isTouch) {
+        let menu;
         let task = taskList.getTaskById(dom.getTaskIdAtPos(_clientX, 
             _clientY), true);
     
@@ -775,7 +907,7 @@ let selection = (function() {
                     true)}
                 );
     
-            let menu = new RightClickMenu(menuTexts, menuFunctions);
+            menu = new RightClickMenu(menuTexts, menuFunctions);
             document.querySelector("body").appendChild(menu.svg);
             menu.buttonDown(_clientX, _clientY);
         } else {
@@ -792,9 +924,13 @@ let selection = (function() {
                     taskList.tasks.length)});
             }
 
-            let menu = new RightClickMenu(menuTexts, menuFunctions);
-        document.querySelector("body").appendChild(menu.svg);
-        menu.buttonDown(_clientX, _clientY);
+            menu = new RightClickMenu(menuTexts, menuFunctions);
+            document.querySelector("body").appendChild(menu.svg);
+            menu.buttonDown(_clientX, _clientY);
+        }
+
+        if (_isTouch) {
+            menu.svg.classList.add("touch-menu");
         }
         
         // else if (copier.buffer.length) {
@@ -820,88 +956,26 @@ let selection = (function() {
     }
 })();
 
-let taskList = new TaskList(null, [ new Task("Test Task") ]);
-taskList.tasks[0].addSubtask(new Task("Another task", "2024-02-01", "17:00",
-    "This is a test task.", 2, 3, "No notes for this task."));
-taskList.tasks[0].subtasks[0].addSubtask(new Task("Fourth task"));
-taskList.tasks[0].subtasks[0].subtasks[0].addSubtask(new Task("Fifth task"));
-taskList.tasks[0].subtasks[0].subtasks[0].addSubtask(new Task("Sixth task"));
-taskList.tasks[0].addSubtask(new Task("A third task"));
-//topLevelTasks[0].subtaskList.removeIdx(0);
-//topLevelTasks[0].subtaskList.removeId(1);
-//copier.copy(taskList.tasks[0].subtaskList.tasks[0], true, taskList);
-//copier.copy(taskList.tasks[0].subtasks[0], true);
-//copier.cut(taskList.tasks[0].subtaskList.tasks[0], false);
-//copier.cut(taskList.tasks[0].subtaskList.tasks[0], true);
+// let taskList = new TaskList(null, [ new Task("Test Task") ]);
+// taskList.tasks[0].addSubtask(new Task("Another task", "2024-02-01", "17:00",
+//     "This is a test task.", 2, 3, "No notes for this task."));
+// taskList.tasks[0].subtasks[0].addSubtask(new Task("Fourth task"));
+// taskList.tasks[0].subtasks[0].subtasks[0].addSubtask(new Task("Fifth task"));
+// taskList.tasks[0].subtasks[0].subtasks[0].addSubtask(new Task("Sixth task"));
+// taskList.tasks[0].addSubtask(new Task("A third task"));
 
-taskList.tasks.forEach(_elem => {
-    _elem.log();
-});
+// taskList.tasks.forEach(_elem => {
+//     _elem.log();
+// });
+
+let taskList = new TaskList();
+taskList.restoreFromLocalStorage();
+
 
 taskList.refreshDom(true);
-//copier.paste(taskList.tasks[0].subtasks[0].subtasks[0].subtasks[1]);
-//copier.paste(taskList, 0);
-
-// document.addEventListener("click", _e => {
-//     if (_e.button == 2) {
-//         menu.buttonDown(_e.clientX, _e.clientY);
-//     }
-// });
 
 document.addEventListener("contextmenu", (_e) => {
     _e.preventDefault();
-
-    // console.log(_e);
-    // let task = taskList.getTaskById(dom.getTaskIdAtPos(_e.pageX, _e.pageY), true);
-
-    // if (task) {
-    //     if (selection.selectionAddTo) {
-    //         selection.add(task);
-    //     } else {
-    //         selection.addExclusive(task);
-    //         console.log(selection.selected);
-    //     }
-    // }
-
-    // console.log(selection.selected.length);
-
-    // if (selection.selected.length) {
-    //     dom.freeze();
-    //     //selection.add(task);
-    //     let menuTexts = [ "Copy (with subtasks)", "Copy (without subtasks)", 
-    //     "Cut (with subtasks)", "Cut (without subtasks)" ];
-    //     let menuFunctions = [
-    //         function() {copier.copy(selection.selected, true, taskList)},
-    //         function() {copier.copy(selection.selected, false, taskList)},
-    //         function() {copier.cut(selection.selected, true, true, taskList)},
-    //         function() {copier.cut(selection.selected, false, true, taskList)}
-    //     ];
-
-    //     // Only show paste option if there's something to paste.
-    //     if (copier.buffer.length) {
-    //         menuTexts.push("Paste (above)", "Paste (below)", "Paste (as subtask)");
-    //         menuFunctions.push(
-    //             function() {copier.paste(task.supertaskList, 
-    //                 task.supertaskList.getTaskIdx(task))},
-    //             function() {copier.paste(task.supertaskList, 
-    //                 task.supertaskList.getTaskIdx(task) + 1)},
-    //             function() {copier.paste(task.subtaskList)}
-    //         );
-    //     }
-
-    //     let menu = new RightClickMenu(menuTexts, menuFunctions);
-    //     document.querySelector("body").appendChild(menu.svg);
-    //     menu.buttonDown(_e.pageX, _e.pageY);
-    // } else if (copier.buffer.length) {
-    //     dom.freeze();
-    //     let menu = new RightClickMenu([ "Paste" ], 
-    //         [
-    //             function() {copier.paste(taskList)}
-    //         ]);
-    //     document.querySelector("body").appendChild(menu.svg);
-    //     menu.buttonDown(_e.pageX, _e.pageY);
-    // }
-
 });
 
 
@@ -962,7 +1036,7 @@ document.addEventListener("touchstart", _e => {
                 Math.abs(stateManager.touch.pos[1].y - 
                 stateManager.touch.pos[0].y) < 40) {
             selection.triggerMenu(stateManager.touch.pos[1].x, 
-                stateManager.touch.pos[1].y, stateManager.selectionAddTo);
+                stateManager.touch.pos[1].y, stateManager.selectionAddTo, true);
         }
     }
 
@@ -986,5 +1060,10 @@ let clearData = document.querySelector(".clear-data");
 clearData.addEventListener("click", _e => {
     if (!stateManager.currentlyEditing) {
         let shouldDelete = confirm("This will delete all saved data. Continue?");
+
+        if (shouldDelete) {
+            taskList.clear();
+            taskList.clearLocalStorage();
+        }
     }
 });
