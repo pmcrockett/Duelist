@@ -453,6 +453,12 @@ input[type="checkbox"] {
     margin-left: 10px;
 }
 
+.card-label ,
+.field-container > label,
+.field-container > .pseudo-label {
+    padding: 0px 2px 0px 2px;
+}
+
 .progress-check-container{
     font-size: smaller;
     padding-left: 4px;
@@ -488,6 +494,10 @@ input[type="checkbox"] {
     overflow: hidden;
     /* z-index: 3; */
 }
+
+/* .touch-menu .menu-text {
+    font-size: 24px;
+} */
 
 .menu-rect {
     fill: var(--card-bg-col);
