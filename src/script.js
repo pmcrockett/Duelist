@@ -981,3 +981,10 @@ document.addEventListener("keydown", _e => {
         console.log(selection.selected);
     }
 });
+
+let clearData = document.querySelector(".clear-data");
+clearData.addEventListener("click", _e => {
+    if (!stateManager.currentlyEditing) {
+        let shouldDelete = confirm("This will delete all saved data. Continue?");
+    }
+});
