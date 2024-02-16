@@ -22,12 +22,6 @@
 }
 
 :root {
-    /* --card-header-col: blueviolet;
-    --card-header-hover-col: rgb(112, 6, 212);
-    --card-bg-col: rgb(247, 206, 247);
-    --card-bg-hover-col: rgb(248, 159, 248);
-    --card-select-col: rgb(252, 52, 252);
-    --shadow-col: rgb(0, 0, 0); */
     --card-header-col: rgb(74, 103, 201);
     --card-header-hover-col: rgb(45, 94, 255);
     --card-bg-col: rgb(210, 221, 255);
@@ -47,7 +41,6 @@
     --input-field-half-width: calc(calc(var(--input-card-max-width) * 0.5) - 
         calc(var(--input-card-margin) * 2));
     --title-font-size: 26px;
-    /* width: 100vw; */
     user-select: none;
     font-family: Jost-Reg, Arial, Helvetica, sans-serif;
 }
@@ -55,22 +48,20 @@
 body {
     background-color: rgb(192, 214, 255);
     display: grid;
-    /* grid-template-columns: 1fr minmax(280px, 600px) 1fr; */
     grid-template-columns: 1fr max(280px, min(600px, 100%)) 1fr;
     grid-template-rows: 100%;
     justify-content: center;
     align-content: start;
 }
 
-/* .card-spacer {
-    position: absolute;
-    top: 15vh;
-    display: grid;
-    width: 100%;
-    height: auto;
-    justify-items: center;
-    align-items: start;
-} */
+.bg-img {
+    fill: var(--card-bg-hover-col);
+    width: 12px;
+}
+
+
+
+/* INPUT CARD ELEMENTS */
 
 .card-input {
     background-color: var(--card-bg-col);
@@ -79,7 +70,6 @@ body {
     display: grid;
     grid-template-columns: 1fr;
     grid-auto-rows: min-content;
-    /* justify-items: stretch; */
     align-content: space-evenly;
     min-width: 264px;
     max-width: var(--input-card-max-width);
@@ -90,18 +80,12 @@ body {
     top: 10vh;
 }
 
-.card-editable:not(.card-title), fieldset > label {
-    font-family: Assistant-Reg, Arial, Helvetica, sans-serif;
-}
-
 input, textarea {
     font-family: Spline-Sans-Mono-Reg, Arial, Helvetica, sans-serif;
+    max-width: var(--input-field-width);
 }
 
 input, textarea, fieldset {
-    /* border-radius: 4px;
-    border-width: 1px;
-    border-color: var(--card-border-col); */
     border-style: none;
     background-color: var(--field-col);
     padding: 10px;
@@ -109,31 +93,9 @@ input, textarea, fieldset {
     outline-color: var(--card-select-col);
 }
 
-input, textarea {
-    max-width: var(--input-field-width);
-}
-
 input:hover, textarea:hover, fieldset:hover:not([disabled]),
 input:focus, textarea:focus, fieldset:focus {
     background-color: var(--card-bg-hover-col);
-}
-
-.field-container {
-    margin-top: 8px;
-    margin-left: 8px;
-    margin-right: 8px;
-    /* width: auto; */
-    display: grid;
-    grid-template-columns: 1fr;
-    grid-template-rows: min-content;
-    grid-auto-flow: row;
-    grid-auto-rows: auto;
-    max-width: var(--input-field-width);
-    /* width: 150px; */
-}
-
-.input-container > .field-container {
-    max-width: var(--input-field-half-width);
 }
 
 textarea {
@@ -151,8 +113,6 @@ fieldset {
     grid-template-columns: auto auto;
     grid-template-rows: 1fr 1fr 1fr;
     align-items: center;
-    /* align-self: start; */
-    /* justify-self: center; */
     height: min-content;
     max-width: var(--input-field-half-width);
 }
@@ -164,18 +124,34 @@ input[type="radio"] {
 input[type="date"],
 input[type="time"] {
     max-width: var(--input-field-half-width);
+    /* Makes time/date fields display correctly on Chrome mobile. */
     box-sizing: border-box;
-    /* width: 100%; */
+}
+
+input[type="checkbox"] {
+    margin-top: 2px;
+}
+
+.field-container {
+    margin-top: 8px;
+    margin-left: 8px;
+    margin-right: 8px;
+    display: grid;
+    grid-template-columns: 1fr;
+    grid-template-rows: min-content;
+    grid-auto-flow: row;
+    grid-auto-rows: auto;
+    max-width: var(--input-field-width);
+}
+
+.input-container > .field-container {
+    max-width: var(--input-field-half-width);
 }
 
 .input-container {
     display: grid;
-    /* column-gap: 8px; */
     grid-template-columns: 1fr 1fr;
     max-width: var(--input-card-max-width);
-    /* display: flex;
-    flex-wrap: wrap;
-    justify-content: center; */
 }
 
 .due-container {
@@ -187,26 +163,52 @@ input[type="time"] {
 }
 
 .progress-check-container {
-    /* grid-area: 3 / 2 / 4 / 3; */
     display: grid;
     column-gap: 8px;
     grid-template-columns: auto 1fr;
     align-items: start;
+    font-size: smaller;
+    padding-left: 4px;
 }
 
-input[type="checkbox"] {
-    margin-top: 2px;
+.field-container > label,
+.field-container > .pseudo-label {
+    height: min-content;
+    top: 1px;
+    z-index: 1;
+    margin-left: 10px;
 }
+
+.input-buttons {
+    margin: 8px;
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: min-content;
+    justify-content: end;
+}
+
+.confirm-edit-img {
+    fill: var(--card-header-col);
+    width: 32px;
+    height: 32px;
+    filter: var(--shadow-s);
+}
+
+.confirm-edit-img:hover {
+    fill: var(--card-header-hover-col);
+}
+
+
+
+/* TASK CARD ELEMENTS */
 
 .task-bin {
-    /* grid-area: 1 / 1 / 4 / 4; */
     grid-area: 1 / 2 / 2 / 3;
     margin-bottom: 14px;
-    /* isolation: isolate; */
-    /* position: relative;
-    z-index: 0; */
-    /* justify-self: center;
-    min-width: fit-content; */
+}
+
+.card-editable:not(.card-title), fieldset > label {
+    font-family: Assistant-Reg, Arial, Helvetica, sans-serif;
 }
 
 .task {
@@ -217,7 +219,6 @@ input[type="checkbox"] {
     margin: 14px calc(var(--card-margin) * 0.75) 0px 0px;
     margin-left: 14px;
     filter: var(--shadow-l);
-    
     position: relative;
     z-index: 0;
 }
@@ -225,6 +226,66 @@ input[type="checkbox"] {
 .task.collapsed {
     padding-bottom: 0px;
 }
+
+.task-bin:not(.freeze) .task-expand-img:hover, 
+.task-bin:not(.freeze) .subtasks-header:hover > .subtasks-plus-img {
+    fill: var(--card-header-hover-col);
+}
+
+.task-bin:not(.freeze) .subtasks-header:hover > .subtasks-text {
+    background-color: var(--card-bg-hover-col);
+}
+
+.task-bin:not(.freeze) .card-header-div.hover-possible:hover > .edit-task-img {
+    display: grid;
+    filter: var(--shadow-l);
+}
+
+.task-bin:not(.freeze) .edit-task-img:hover {
+    fill: var(--card-header-hover-col);
+}
+
+.card-label,
+.field-container > label,
+.field-container > .pseudo-label {
+    position: relative;
+    background-color: var(--field-col);
+    filter: var(--shadow-s);
+    border-radius: 3px;
+    font-size: smaller;
+    width: fit-content;
+    padding: 0px 2px 0px 2px;
+}
+
+.card-label {
+    height: fit-content;
+    top: -24px;
+    grid-area: 1 / 1 / 2 / 2;
+}
+
+.card-container {
+    background-color: var(--field-col);
+    margin: 20px 10px 0px 10px;
+    padding: 10px;
+    display: grid;
+    grid-template-rows: 0px auto;
+    filter: var(--shadow-s);
+}
+
+.info-container > .card-container {
+    flex-grow: 1;
+}
+
+.info-container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: start;
+    position: relative;
+    z-index: 0;
+}
+
+
+/* TITLE BAR ELEMENTS */
 
 .card-title-div {
     background-color: var(--card-header-col);
@@ -249,26 +310,59 @@ input[type="checkbox"] {
     color: var(--card-bg-hover-col);
 }
 
+.card-header-div {
+    display: grid;
+    grid-template-columns: 1fr;
+    grid-template-rows: minmax(32px, auto) auto auto 4px;
+    justify-content: space-between;
+    justify-items: start;
+    align-items: center;
+    position: relative;
+    z-index: 1;
+    background-color: var(--card-header-col);
+    border-radius: 10px 10px 10px 10px;
+    border-style: solid;
+    border-color: rgba(0, 0, 0, 0);
+    border-width: 4px;
+    padding: 4px 4px 0px 4px;
+    filter: var(--shadow-s);
+}
+
+.card-due-date {
+    grid-area: 2 / 1 / 3 / 2;
+}
+
+.card-due-time {
+    grid-area: 3 / 1 / 4 / 2;
+}
+
+.task.selected > .card-header-div  {
+    border-color: var(--card-select-col);
+}
+
+.task-bin:not(.freeze) .card-header-div.hover-possible:hover,
+.task.editing > .card-header-div {
+    background-color: var(--card-header-hover-col);
+}
+
+.task.collapsed .card-container,
+.subtasks.collapsed > div:not(.subtasks-header) {
+    display: none;
+}
+
 .progress-completed + .card-title {
     text-decoration-line: line-through;
 }
 
 .edit-task-img {
     display: none;
-    /* fill: var(--card-bg-hover-col); */
     fill: var(--card-header-col);
     width: 32px;
     height: 32px;
     grid-area: 1 / 1 / 2 / 2;
-    /* grid-area: 1 / 1 / 5 / 2; */
     justify-self: end;
     align-self: center;
 }
-/* 
-.edit-task-img > path:not(.bg-img) {
-    fill: var(--card-header-col);
-
-} */
 
 .priority-img, .progress-img {
     fill: var(--card-bg-hover-col);
@@ -299,94 +393,14 @@ input[type="checkbox"] {
     justify-self: center;
     grid-area: 4 / 1 / 5 / 2;
     fill: var(--card-header-col);
-    /* filter: drop-shadow(3px 3px 6px var(--shadow-col)); */
     filter: var(--shadow-x-only);
 }
 
-.task-bin:not(.freeze) .task-expand-img:hover, 
-.task-bin:not(.freeze) .subtasks-header:hover > .subtasks-plus-img {
-    fill: var(--card-header-hover-col);
-}
 
-.task-bin:not(.freeze) .subtasks-header:hover > .subtasks-text {
-    background-color: var(--card-bg-hover-col);
-}
 
-.task-bin:not(.freeze) .card-header-div.hover-possible:hover > .edit-task-img {
-    display: grid;
-    filter: var(--shadow-l);
-}
-
-.task-bin:not(.freeze) .edit-task-img:hover {
-    fill: var(--card-header-hover-col);
-}
-
-.input-buttons {
-    margin: 8px;
-    display: grid;
-    grid-auto-flow: column;
-    grid-auto-columns: min-content;
-    justify-content: end;
-}
-
-.confirm-edit-img {
-    fill: var(--card-header-col);
-    width: 32px;
-    height: 32px;
-    filter: var(--shadow-s);
-}
-
-.confirm-edit-img:hover {
-    fill: var(--card-header-hover-col);
-}
-
-.card-header-div {
-    display: grid;
-    grid-template-columns: 1fr;
-    /* grid-template-rows: 32px auto auto 4px; */
-    grid-template-rows: minmax(32px, auto) auto auto 4px;
-    justify-content: space-between;
-    justify-items: start;
-    align-items: center;
-    /* position: relative; */
-    /* z-index: 1; */
-    position: relative;
-    z-index: 1;
-
-    background-color: var(--card-header-col);
-    border-radius: 10px 10px 10px 10px;
-    border-style: solid;
-    border-color: rgba(0, 0, 0, 0);
-    border-width: 4px;
-    padding: 4px 4px 0px 4px;
-    filter: var(--shadow-s);
-}
-
-.card-due-date {
-    grid-area: 2 / 1 / 3 / 2;
-}
-
-.card-due-time {
-    grid-area: 3 / 1 / 4 / 2;
-}
-
-.task.selected > .card-header-div  {
-    /* background-color: var(--card-select-col); */
-    border-color: var(--card-select-col);
-}
-
-.task-bin:not(.freeze) .card-header-div.hover-possible:hover,
-.task.editing > .card-header-div {
-    background-color: var(--card-header-hover-col);
-}
-
-.task.collapsed .card-container,
-.subtasks.collapsed > div:not(.subtasks-header) {
-    display: none;
-}
+/* SUBTASK ELEMNTS */
 
 .subtasks-header {
-    /* color: var(--card-header-col); */
     margin: 4px 0px 4px 0px;
     width: fit-content;
     display: grid;
@@ -407,94 +421,21 @@ input[type="checkbox"] {
     border-radius: 0px 10px 10px 0px;
     width: fit-content;
     padding: 0px 6px 0px 12px;
-    /* padding-bottom: 10px; */
-    /* margin: 14px calc(var(--card-margin) * 0.75) 0px 0px; */
-    /* margin-left: 14px; */
     filter: var(--shadow-l);
-    
     position: relative;
     left: -12px;
     z-index: -1;
 }
-/* .subtasks {
-    position: relative;
-    z-index: 0;
-} */
 
-.card-label {
-    position: relative;
-    background-color: var(--field-col);
-    filter: var(--shadow-s);
-    /* background-color: rgba(0, 0, 0, 0); */
-    /* border-style: solid;
-    border-width: 1px; */
-    border-radius: 3px;
-    font-size: smaller;
-    width: fit-content;
-    height: fit-content;
-    top: -24px;
-    grid-area: 1 / 1 / 2 / 2;
-}
 
-.field-container > label,
-.field-container > .pseudo-label {
-    position: relative;
-    background-color: var(--field-col);
-    filter: var(--shadow-s);
-    /* background-color: rgba(0, 0, 0, 0); */
-    /* border-style: solid;
-    border-width: 1px; */
-    border-radius: 3px;
-    font-size: smaller;
-    width: fit-content;
-    height: min-content;
-    top: 1px;
-    z-index: 1;
-    /* z-index: 4; */
-    margin-left: 10px;
-}
 
-.card-label ,
-.field-container > label,
-.field-container > .pseudo-label {
-    padding: 0px 2px 0px 2px;
-}
-
-.progress-check-container{
-    font-size: smaller;
-    padding-left: 4px;
-
-}
-
-.card-container {
-    background-color: var(--field-col);
-    /* outline-style: solid;
-    outline-width: 1px;; */
-    margin: 20px 10px 0px 10px;
-    padding: 10px;
-    display: grid;
-    grid-template-rows: 0px auto;
-    filter: var(--shadow-s);
-}
-
-.info-container {
-    /* display: grid;
-    grid-template-columns: 1fr 1fr; */
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: start;
-    position: relative;
-    z-index: 0;
-}
-
-.info-container > .card-container {
-    flex-grow: 1;
-}
+/* MENU ELEMENTS */
 
 .menu {
     overflow: hidden;
     font-size: 20px;
-    /* z-index: 3; */
+    filter: var(--shadow-l);
+    z-index: 11;
 }
 
 .menu.touch-menu {
@@ -517,21 +458,15 @@ input[type="checkbox"] {
     fill: var(--card-bg-hover-col);
 }
 
-.hidden {
-    display: none;
-}
 
-.bg-img {
-    fill: var(--card-bg-hover-col);
-    width: 12px;
-}
+
+/* CLEAR DATA ELEMENTS */
 
 .clear-data {
     position: fixed;
     bottom: 0px;
     right: max(0px, calc(calc(100vw * 0.5) - 300px));
     z-index: 10;
-
     background-color: var(--card-bg-col);
     border-radius: 10px 10px 0px 0px;
     width: fit-content;
@@ -541,4 +476,12 @@ input[type="checkbox"] {
 
 .task-bin:not(.freeze) + .clear-data:hover {
     background-color: var(--card-bg-hover-col);
+}
+
+
+
+/* OVERRIDES OTHER PROPERTIES -- SHOULD ALWAYS COME LAST */
+
+.hidden {
+    display: none;
 }
