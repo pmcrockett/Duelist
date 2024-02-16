@@ -1,28 +1,3 @@
-// Task
-    // Methods
-        // delete
-        // copy
-        // cut
-        // paste
-        // edit
-        // expand
-        // sortSubtasks
-    // Properties
-        // due
-        // title
-        // description
-        // priority
-        // notes
-        // progress
-        // useProgressFromSubtasks
-        // subtasks
-        // expanded
-
-// Menu (?)
-
-// Top-level array of tasks
-
-// DOM module
 import * as dom from "./dom.js";
 import timezoneString from "./timezone-string.js";
 import RightClickMenu from "./right-click-menu.js";
@@ -80,7 +55,6 @@ class Task {
         } else {
             this.id = -1;
         }
-        // Place DOM object in supertask or root array
     }
 
     clone(_recursive, _supertaskList, _idx) {
@@ -89,7 +63,6 @@ class Task {
             null, true);
         cloned.expanded = this.expanded;
         cloned.selected = false;
-        //cloned.expanded = false;
         cloned.useProgressFromSubtasks = this.useProgressFromSubtasks;
 
         if (_supertaskList) {
@@ -108,21 +81,6 @@ class Task {
     }
 
     updateDue() {
-        // if (!this.dueDate || this.dueDate.length < 1) {
-        //     let today = new Date(Date.now());
-        //     let padLen = 2;
-        //     this.dueDate = `${today.getFullYear()}-${String(today.getMonth() + 1).
-        //         padStart(padLen, "0")}-${String(today.getDate()).padStart(padLen, "0")}`;
-        // }
-
-        // if (!this.dueTime || this.dueTime.length < 1) {
-        //     this.dueTime = "00:00";
-        // }
-
-        // let timezone = timezoneString();
-        // this.dateString = `${this.dueDate}T${this.dueTime}:00.000${timezone}`;
-        // this.due = new Date(this.dateString);
-
         let timezone = timezoneString();
 
         if (this.dueDateStr && this.dueDateStr.length) {
@@ -146,26 +104,6 @@ class Task {
             this.depth++;
             supertask = supertask.supertaskList ? supertask.supertaskList.owner : null;
         }
-    }
-
-    editTitle() {
-
-    }
-
-    editDue() {
-
-    }
-
-    editDescription() {
-
-    }
-
-    editProgress() {
-
-    }
-
-    editNotes() {
-
     }
 
     delete(_recursive) {
@@ -213,7 +151,15 @@ class Task {
             this.progress = this.getProgressRecursive();
         }
 
-        this.domDiv = dom.createCard(this, stateManager);
+        this.domDiv = dom.createCard(this);
+        listener.addExpandTask(this.domDiv.taskExpand, this, this.domDiv.task, 
+            this.domDiv.taskExpandPath, this.domDiv.header);
+        listener.addOpenEdit(this.domDiv.editOpen, this);
+
+        if (this.domDiv.needSubtasksListener) {
+            listener.addExpandSubtasks(this.domDiv.subtasksExpand, this, 
+                this.domDiv.subtasks);
+        }
 
         if (_recursive) {
             this.subtaskList.refreshDom(_recursive);
@@ -243,20 +189,6 @@ class Task {
     removeSubtaskIdx(_idx) {
         return this.subtaskList.removeIdx(_idx);
     }
-
-    // getProgressRecursive(_progress) {
-    //     if (_progress == null) _progress = 0;
-
-    //     if (!this.useProgressFromSubtasks && this.progress > _progress) {
-    //         _progress = this.progress;
-    //     }
-
-    //     for (let task of this.subtaskList.tasks) {
-    //         _progress = task.getProgressRecursive(_progress);
-    //     }
-
-    //     return _progress;
-    // }
 
     getProgressRecursive(_progress) {
         if (_progress == null) _progress = 0;
@@ -322,7 +254,6 @@ class TaskList {
 
     constructor(_owner, _tasks) {
         this.owner = _owner;
-        //this.tasks = _subtasks || [];
         this.tasks = [];
 
         if (_tasks) {
@@ -330,10 +261,6 @@ class TaskList {
                 this.add(_task);
             });
         }
-    }
-
-    sort() {
-
     }
 
     createTask(_idx, _showInput) {
@@ -352,8 +279,9 @@ class TaskList {
 
         this.writeRootToLocalStorage();
 
-        if (_showInput) {
-            dom.createInputBox(newTask, stateManager);
+        if (_showInput && !stateManager.currentlyEditing) {
+            let inputBox = dom.createInputBox(newTask);
+            listener.addInputCard(newTask, inputBox);
         }
     }
 
@@ -452,7 +380,6 @@ class TaskList {
 
         for (let i = 0; i < this.tasks.length; i++) {
             this.tasks[i].refreshDom(_recursive);
-            // dom.setTaskZDepth(this.tasks[i], 500 - i);
         }
     }
 
@@ -587,22 +514,14 @@ let stateManager = (function() {
         }
     }
 
-    document.addEventListener("keydown", _e => {
-        setSelectionAddTo.bind(this, true, _e)();
-        setSelectionMass.bind(this, true, _e)();
-    });
-    
-    document.addEventListener("keyup", _e => {
-        setSelectionAddTo.bind(this, false, _e)();
-        setSelectionMass.bind(this, false, _e)();
-    });
-
-
     return {
         currentlyEditing,
         selectionAddTo,
+        selectionMass,
+        setSelectionAddTo,
+        setSelectionMass,
         touch
-    }
+    };
 })();
 
 let logger = (function() {
@@ -719,7 +638,6 @@ let copier = (function() {
                 let cloned = bufItem.clone(true, _taskList, _idx++);
                 cloned.assignNewIdRecursive();
                 cloned.updateDepth(true);
-                //cloned.refreshDom(true);
             }
 
             if (_taskList.owner) {
@@ -875,7 +793,6 @@ let selection = (function() {
 
         if (task && selection.selected.length) {
             dom.freeze();
-            //selection.add(task);
             let menuTexts = [ "New task (above)", "New task (below)", 
                 "New task (as subtask)", "Copy (with subtasks)", 
                 "Copy (without subtasks)", "Cut (with subtasks)", 
@@ -934,16 +851,6 @@ let selection = (function() {
             document.querySelector("body").appendChild(menu.svg);
             menu.buttonDown(_clientX, _clientY);
         }
-        
-        // else if (copier.buffer.length) {
-        //     dom.freeze();
-        //     let menu = new RightClickMenu([ "New task", "Paste" ], 
-        //         [
-        //             function() {copier.paste(taskList, taskList.tasks.length)}
-        //         ]);
-        //     document.querySelector("body").appendChild(menu.svg);
-        //     menu.buttonDown(_clientX, _clientY);
-        // }
     }
 
     return {
@@ -958,114 +865,224 @@ let selection = (function() {
     }
 })();
 
-// let taskList = new TaskList(null, [ new Task("Test Task") ]);
-// taskList.tasks[0].addSubtask(new Task("Another task", "2024-02-01", "17:00",
-//     "This is a test task.", 2, 3, "No notes for this task."));
-// taskList.tasks[0].subtasks[0].addSubtask(new Task("Fourth task"));
-// taskList.tasks[0].subtasks[0].subtasks[0].addSubtask(new Task("Fifth task"));
-// taskList.tasks[0].subtasks[0].subtasks[0].addSubtask(new Task("Sixth task"));
-// taskList.tasks[0].addSubtask(new Task("A third task"));
+let listener = (function() {
+    let addLeftClick = function() {
+        document.addEventListener("click", _e => {
+            let task = taskList.getTaskById(dom.getTaskIdAtPos(_e.clientX, _e.clientY), true);
+            let underMouse = document.elementsFromPoint(_e.clientX, _e.clientY);
+            
+            if (!stateManager.currentlyEditing) {
+                if (!_e.target.classList.contains("input-button")) {
+                    if (task) {
+                        selection.updateSelection(task);
+                    } else {
+                        let needClear = true;
+        
+                        for (let elem of underMouse) {
+                            if (elem.classList.contains("task-expand-img") ||
+                            elem.classList.contains("subtasks-plus-img")) {
+                                needClear = false;
+                                break;
+                            }
+                        }
+        
+                        if (needClear) {
+                            selection.clear();
+                        }
+                    }
+                }
+            }
+        });
+        
+        document.addEventListener("mouseup", _e => {
+            if (_e.button == 0 && !stateManager.currentlyEditing) {
+                dom.thaw();
+            }
+        });
 
-// taskList.tasks.forEach(_elem => {
-//     _elem.log();
-// });
+        document.addEventListener("touchstart", _e => {
+            stateManager.touch.time.splice(0, 1);
+            stateManager.touch.time.push(new Date().getTime());
+
+            stateManager.touch.pos.splice(0, 1);
+            stateManager.touch.pos.push({ x: _e.touches[0].clientX, 
+                y: _e.touches[0].clientY });
+
+            if (stateManager.touch.time[0] && 
+                stateManager.touch.time[1] - stateManager.touch.time[0]< 300) {
+                if (Math.abs(stateManager.touch.pos[1].x - 
+                        stateManager.touch.pos[0].x) < 40 &&
+                        Math.abs(stateManager.touch.pos[1].y - 
+                        stateManager.touch.pos[0].y) < 40) {
+                    selection.triggerMenu(stateManager.touch.pos[1].x, 
+                        stateManager.touch.pos[1].y, stateManager.selectionAddTo, true);
+                }
+            }
+
+            stateManager.touch.touchedId.splice(0, 1);
+            stateManager.touch.touchedId.push(dom.getTaskIdAtPos(_e.touches[0].clientX, 
+                _e.touches[0].clientY));
+            console.log("Set last touched to " + stateManager.touch.touchedId);
+        });
+    };
+
+    let addRightClick = function() {
+        document.addEventListener("contextmenu", (_e) => {
+            _e.preventDefault();
+        });
+
+        document.addEventListener("mousedown", _e => {
+            if (_e.button == 2 && !stateManager.currentlyEditing) {
+                selection.triggerMenu(_e.clientX, _e.clientY, stateManager.selectionAddTo);
+            }
+        });
+    };
+
+    let addModifierKeys = function() {
+        document.addEventListener("keydown", _e => {
+            stateManager.setSelectionAddTo.bind(stateManager, true, _e)();
+            stateManager.setSelectionMass.bind(stateManager, true, _e)();
+        });
+        
+        document.addEventListener("keyup", _e => {
+            stateManager.setSelectionAddTo.bind(stateManager, false, _e)();
+            stateManager.setSelectionMass.bind(stateManager, false, _e)();
+        });
+    };
+
+    let addClearData = function() {
+        let clearData = document.querySelector(".clear-data");
+        clearData.addEventListener("click", _e => {
+            if (!stateManager.currentlyEditing) {
+                let shouldDelete = confirm("This will delete all saved data. Continue?");
+        
+                if (shouldDelete) {
+                    taskList.clear();
+                    taskList.clearLocalStorage();
+                }
+            }
+        });
+    };
+
+    let addExpandSubtasks = function(_elem, _task, _subtasksElem) {
+        _elem.addEventListener("click", _event => {
+            if (stateManager.currentlyEditing) return;
+
+            _task.subtaskList.expanded = !_task.subtaskList.expanded;
+            dom.setSubtaskExpandView(_task.subtaskList.expanded, _subtasksElem, 
+                _task, stateManager.selectionAddTo);
+        });
+    };
+
+    let addExpandTask = function(_elem, _task, _taskElem, _svgPathElem, 
+            _headerElem) {
+        _elem.addEventListener("click", _event => {
+            if (stateManager.currentlyEditing) return;
+            _task.expanded = !_task.expanded;
+            dom.updateTaskExpandView(_svgPathElem, _taskElem, _task);
+        });
+
+        _headerElem.addEventListener("mouseover", _event => {
+            let underMouse = document.elementsFromPoint(_event.clientX, 
+                _event.clientY);
+    
+            for (let _e of underMouse) {
+                // Disregard positions that also intersect the expand button.
+                if (_e.classList.contains("task-expand-img")) {
+                    _headerElem.classList.remove("hover-possible");
+
+                    return false;
+                }
+            };
+    
+            _headerElem.classList.add("hover-possible");
+            
+            return true;
+        });
+    };
+
+    let addOpenEdit = function(_elem, _task) {
+        _elem.addEventListener("click", _event => {
+            // Because mouseover doesn't exist on a touchscreen, the edit button is
+            // revealed once the user has tapped the task's header and can only be
+            // activated once revealed. I.e. the button can only be clicked if the
+            // second-to-last touch was on the button's task's header.
+            if (!stateManager.currentlyEditing) {
+                if (_event.pointerType == "touch") {
+                    if (_task.selected && stateManager.touch.touchedId[0] == _task.id) {
+                        _task.currentlyEditing = true;
+                        stateManager.currentlyEditing = true;
+                        let inputBox = dom.createInputBox(_task);
+                        addInputCard(_task, inputBox);
+                    }
+                } else {
+                    _task.currentlyEditing = true;
+                    stateManager.currentlyEditing = true;
+                    let inputBox = dom.createInputBox(_task);
+                    addInputCard(_task, inputBox);
+                }
+            }
+        });
+    };
+
+    let addInputCard = function(_task, _inputObj) {
+        _inputObj.progressCheck.addEventListener("change", _e => {
+            dom.updateProgressField(_inputObj.progressCheck, _inputObj.progressField);
+        });
+
+        _inputObj.confirm.addEventListener("click", _event => {
+            _task.currentlyEditing = false;
+            stateManager.currentlyEditing = false;
+    
+            _task.title = _inputObj.titleInput.value;
+            _task.dueDateStr = _inputObj.dateInput.value;
+            _task.dueTimeStr = _inputObj.timeInput.value;
+            _task.updateDue();
+            _task.description = _inputObj.descInput.value;
+            _task.priority = dom.getRadioValue(_inputObj.priorityField);
+            _task.useProgressFromSubtasks = _inputObj.progressCheck.checked;
+    
+            if (_task.useProgressFromSubtasks) {
+                _task.progress = _task.getProgressRecursive();
+            } else {
+                _task.progress = dom.getRadioValue(_inputObj.progressField);
+            }
+    
+            _task.notes = _inputObj.notesInput.value;
+            _inputObj.cardInput.remove();
+            dom.thaw();
+            _inputObj.card.classList.remove("editing");
+            _task.supertaskList.writeRootToLocalStorage();
+            _task.refreshDom(false);
+        });
+    
+        _inputObj.cancel.addEventListener("click", _event => {
+            _task.currentlyEditing = false;
+            stateManager.currentlyEditing = false;
+            
+            _inputObj.cardInput.remove();
+            _inputObj.card.classList.remove("editing");
+            dom.thaw();
+        });
+    }
+
+    return {
+        addLeftClick,
+        addRightClick,
+        addModifierKeys,
+        addClearData,
+        addExpandSubtasks,
+        addExpandTask,
+        addOpenEdit,
+        addInputCard
+    };
+})();
 
 let taskList = new TaskList();
 taskList.restoreFromLocalStorage();
 
-
 taskList.refreshDom(true);
-
-document.addEventListener("contextmenu", (_e) => {
-    _e.preventDefault();
-});
-
-
-document.addEventListener("click", _e => {
-    // let task = taskList.getTaskById(dom.getTaskIdAtPos(_e.pageX, _e.pageY), true);
-    let task = taskList.getTaskById(dom.getTaskIdAtPos(_e.clientX, _e.clientY), true);
-    // let underMouse = document.elementsFromPoint(_e.pageX, _e.pageY);
-    let underMouse = document.elementsFromPoint(_e.clientX, _e.clientY);
-    
-    if (!stateManager.currentlyEditing) {
-        if (!_e.target.classList.contains("input-button")) {
-            if (task) {
-                selection.updateSelection(task);
-            } else {
-                let needClear = true;
-
-                for (let elem of underMouse) {
-                    if (elem.classList.contains("task-expand-img") ||
-                    elem.classList.contains("subtasks-plus-img")) {
-                        needClear = false;
-                        break;
-                    }
-                }
-
-                if (needClear) {
-                    selection.clear();
-                }
-            }
-        }
-    }
-});
-
-document.addEventListener("mouseup", _e => {
-    if (_e.button == 0 && !stateManager.currentlyEditing) {
-        dom.thaw();
-    }
-});
-
-document.addEventListener("mousedown", _e => {
-    if (_e.button == 2 && !stateManager.currentlyEditing) {
-        selection.triggerMenu(_e.clientX, _e.clientY, stateManager.selectionAddTo);
-    }
-});
-
-document.addEventListener("touchstart", _e => {
-    stateManager.touch.time.splice(0, 1);
-    stateManager.touch.time.push(new Date().getTime());
-
-    stateManager.touch.pos.splice(0, 1);
-    // touch.pos.push({ x: _e.touches[0].pageX, y: _e.touches[0].pageY });
-    stateManager.touch.pos.push({ x: _e.touches[0].clientX, 
-        y: _e.touches[0].clientY });
-
-    if (stateManager.touch.time[0] && 
-        stateManager.touch.time[1] - stateManager.touch.time[0]< 300) {
-        if (Math.abs(stateManager.touch.pos[1].x - 
-                stateManager.touch.pos[0].x) < 40 &&
-                Math.abs(stateManager.touch.pos[1].y - 
-                stateManager.touch.pos[0].y) < 40) {
-            selection.triggerMenu(stateManager.touch.pos[1].x, 
-                stateManager.touch.pos[1].y, stateManager.selectionAddTo, true);
-        }
-    }
-
-    stateManager.touch.touchedId.splice(0, 1);
-    stateManager.touch.touchedId.push(dom.getTaskIdAtPos(_e.touches[0].clientX, 
-        _e.touches[0].clientY));
-    console.log("Set last touched to " + stateManager.touch.touchedId);
-});
-
-document.addEventListener("touchend", _e => {
-
-});
-
-document.addEventListener("keydown", _e => {
-    if (_e.key == "e") {
-        console.log(selection.selected);
-    }
-});
-
-let clearData = document.querySelector(".clear-data");
-clearData.addEventListener("click", _e => {
-    if (!stateManager.currentlyEditing) {
-        let shouldDelete = confirm("This will delete all saved data. Continue?");
-
-        if (shouldDelete) {
-            taskList.clear();
-            taskList.clearLocalStorage();
-        }
-    }
-});
+listener.addLeftClick();
+listener.addRightClick();
+listener.addModifierKeys();
+listener.addClearData();

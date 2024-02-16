@@ -66,10 +66,7 @@ export default class {
         this.group.appendChild(this.menu);
         this.group.setAttribute("id", `menuGroup`);
 
-        //this.border.setAttribute("fill", "red");
         this.border.classList.add("menu-border");
-
-        //this.menu.setAttribute("fill", "green");
         this.menu.classList.add("menu-rect");
 
         this.functions = _functions;
@@ -156,7 +153,6 @@ export default class {
             this.menuMargin} ${width + this.borderSize * 2 + this.menuMargin * 
             2} ${height + this.borderSize * 2 + this.menuMargin * 2}`);
 
-        //this.menuWidth = width + this.borderSize * 2 - this.menuMargin * 2;
         this.menuWidth = width + this.borderSize * 2 - this.menuMargin * 2;
         this.menuHeight = height + this.borderSize * 2 - this.menuMargin * 2;
 
@@ -280,15 +276,11 @@ class MenuItem {
     }
 
     highlight() {
-        //this.rect.setAttribute("fill", "pink");
-        //this.rect.setAttribute("display", "block");
         this.rect.classList.add("menu-highlight");
         this.isHighlighted = true;
     };
 
     unhighlight() {
-        //this.rect.setAttribute("fill", "rgba(0, 0, 0, 0)");
-        //this.rect.setAttribute("display", "none");
         this.rect.classList.remove("menu-highlight");
         this.isHighlighted = false;
     };
@@ -299,7 +291,6 @@ function SVGText(_content, _parent, _id = -1, _fontSize = 10) {
     this.xMargin = this.fontSize * 0.2;
     this.text = document.createElementNS(namespace, "text");
     this.text.textContent = _content;
-    //this.text.setAttribute("fill", "yellow");
     this.text.setAttribute("cursor", "default");
     this.text.classList.add(`menu-text-${_id}`);
     this.text.classList.add("menu-text");

@@ -4,15 +4,7 @@ const taskBin = document.querySelector(".task-bin");
 const priorityList = [ "N/A", "Unimportant", "Important", "Urgent" ];
 const progressList = [ "N/A", "Not started", "In progress", "Complete" ];
 
-export let frozen = false;
-
-export function createCard(_task, _stateManager) {
-    // title;
-    // due;
-    // description;
-    // progress;
-    // notes;
-    // id;
+export function createCard(_task) {
     let supertaskDiv = null;
     let supertask = _task.supertask;
     let neighborIdx = -1;
@@ -36,7 +28,6 @@ export function createCard(_task, _stateManager) {
     }
 
     let indentStr = `margin-left: calc(calc(var(--card-indent) * ${_task.depth}) + calc(var(--card-margin) * 0.5))`;
-    // let indentStr = `margin-left: 0px`;
     let card = document.createElement("div");
     card.classList.add("task", `id-${_task.id}`);
     card.setAttribute("style", indentStr);
@@ -72,15 +63,14 @@ export function createCard(_task, _stateManager) {
     h2.classList.add("card-title", "card-editable");
     titleContainer.appendChild(h2);
 
-    let svg = createSvg("M12,2C6.47,2 2,6.47 2,12C2,17.53 6.47,22 12,22C17.53,22 22,17.53 22,12C22,6.47 17.53,2 12,2M15.1,7.07C15.24,7.07 15.38,7.12 15.5,7.23L16.77,8.5C17,8.72 17,9.07 16.77,9.28L15.77,10.28L13.72,8.23L14.72,7.23C14.82,7.12 14.96,7.07 15.1,7.07M13.13,8.81L15.19,10.87L9.13,16.93H7.07V14.87L13.13,8.81Z", 
+    let editSvg = createSvg("M12,2C6.47,2 2,6.47 2,12C2,17.53 6.47,22 12,22C17.53,22 22,17.53 22,12C22,6.47 17.53,2 12,2M15.1,7.07C15.24,7.07 15.38,7.12 15.5,7.23L16.77,8.5C17,8.72 17,9.07 16.77,9.28L15.77,10.28L13.72,8.23L14.72,7.23C14.82,7.12 14.96,7.07 15.1,7.07M13.13,8.81L15.19,10.87L9.13,16.93H7.07V14.87L13.13,8.81Z", 
         "Edit task", true);
-    svg.classList.add("edit-task-img");
-    hDiv.appendChild(svg);
+    editSvg.classList.add("edit-task-img");
+    hDiv.appendChild(editSvg);
 
     if (_task.dueDate) {
         let dueDate = document.createElement("div");
         dueDate.textContent = `${dateFormat(_task.dueDate, "dddd, mmmm dS, yyyy")}`;
-        //dueDate.textContent = `${_task.dueDate}`;
         dueDate.classList.add("card-due-date", "card-editable");
         hDiv.appendChild(dueDate);
     }
@@ -88,7 +78,6 @@ export function createCard(_task, _stateManager) {
     if (_task.dueTime) {
         let dueTime = document.createElement("div");
         dueTime.textContent = `${dateFormat(_task.dueTime, "h:MM TT")}`;
-        //dueTime.textContent = `${_task.dueTime}`;
         dueTime.classList.add("card-due-time", "card-editable");
         hDiv.appendChild(dueTime);
     }
@@ -104,11 +93,6 @@ export function createCard(_task, _stateManager) {
     let taskExpandPath = taskExpandSvg.querySelector("path:not(.bg-img)");
     updateTaskExpandView(taskExpandPath, card, _task);
 
-    // let spacer = document.createElement("div");
-    // spacer.classList.add("card-spacer", "card-content");
-    // card.appendChild(spacer);
-
-    //if (_task.priority > 0 || _task.progress > 0 || _task.useProgressFromSubtasks) {
     if (_task.priority > 0 || _task.progress > 0) {
         let infoContainer = document.createElement("div");
         infoContainer.classList.add("info-container");
@@ -140,7 +124,6 @@ export function createCard(_task, _stateManager) {
             if (_task.useProgressFromSubtasks) {
                 prog.textContent += " (from subtasks)";
             }
-
 
             prog.classList.add("card-progress", "card-editable");
             progressContainer.appendChild(prog);
@@ -174,15 +157,15 @@ export function createCard(_task, _stateManager) {
     }
 
     let subtasks = taskBin.querySelector(`.subtasks.id-${_task.id}`);
+    let needSubtasksListener = false;
 
     if (!subtasks) {
+        needSubtasksListener = true;
         subtasks = document.createElement("div");
-        //supertaskDiv.appendChild(subtasks);
         card.insertAdjacentElement("afterend", subtasks);
         subtasks.classList.add("subtasks", `id-${_task.id}`);
 
-        let subtasksHeader = document.createElement("div");
-        // subtasksHeader.textContent = `${_task.subtasks.length} subtasks`;
+        var subtasksHeader = document.createElement("div");
         subtasksHeader.classList.add("subtasks-header", `id-${_task.id}`);
         subtasksHeader.setAttribute("style", indentStr)
         subtasks.appendChild(subtasksHeader);
@@ -206,19 +189,10 @@ export function createCard(_task, _stateManager) {
         } else {
             subtasksHeader.classList.remove("hidden");
         }
-
-        // subtasksPlusSvg.addEventListener("click", _event => {
-        subtasksHeader.addEventListener("click", _event => {
-            if (_stateManager.currentlyEditing) return;
-
-            _task.subtaskList.expanded = !_task.subtaskList.expanded;
-            setSubtaskExpandView(_task.subtaskList.expanded, subtasks, _task, 
-                _stateManager.selectionAddTo);
-        });
     } else {
         subtasks.remove();
         card.insertAdjacentElement("afterend", subtasks);
-        let subtasksHeader = subtasks.querySelector(".subtasks-header");
+        var subtasksHeader = subtasks.querySelector(".subtasks-header");
         let subtasksText = subtasks.querySelector(".subtasks-text");
         
         subtasksText.textContent = `${_task.subtasks.length} 
@@ -231,52 +205,19 @@ export function createCard(_task, _stateManager) {
         }
     }
 
-    //expandCard(_task, card);
-    //expandCard(_task, subtasks);
-
-    taskExpandSvg.addEventListener("click", _event => {
-        if (_stateManager.currentlyEditing) return;
-        _task.expanded = !_task.expanded;
-        updateTaskExpandView(taskExpandPath, card, _task);
-    });
-
-    hDiv.addEventListener("mouseover", _e => {
-        let underMouse = document.elementsFromPoint(_e.clientX, _e.clientY);
-
-        for (let _elem of underMouse) {
-            // Disregard positions that also intersect the expand button.
-            if (_elem.classList.contains("task-expand-img")) {
-                hDiv.classList.remove("hover-possible");
-                return false
-            }
-        };
-
-        hDiv.classList.add("hover-possible");
-        
-        return true;
-    });
-
-    svg.addEventListener("click", _event => {
-        // Because mouseover doesn't exist on a touchscreen, the edit button is
-        // revealed once the user has tapped the task's header and can only be
-        // activated once revealed. I.e. the button can only be clicked if the
-        // second-to-last touch was on the button's task's header.
-        if (_event.pointerType == "touch") {
-            if (_task.selected && _stateManager.touch.touchedId[0] == _task.id) {
-                createInputBox(_task, _stateManager);
-            }
-        } else {
-            createInputBox(_task, _stateManager);
-        }
-    });
-
     return {
         task: card,
-        subtasks: subtasks
+        subtasks: subtasks,
+        subtasksExpand: subtasksHeader,
+        needSubtasksListener,
+        taskExpand: taskExpandSvg,
+        taskExpandPath: taskExpandPath,
+        header: hDiv,
+        editOpen: editSvg
     };
 }
 
-function updateTaskExpandView(_svgPath, _card, _task) {
+export function updateTaskExpandView(_svgPath, _card, _task) {
     expandCard(_task, _card);
     
     if (_task.expanded) {
@@ -286,7 +227,7 @@ function updateTaskExpandView(_svgPath, _card, _task) {
     }
 }
 
-function setSubtaskExpandView(_expanded, _card, _task, _recursive) {
+export function setSubtaskExpandView(_expanded, _card, _task, _recursive) {
     let subtasksPlusPath = _card.querySelector(".subtasks-plus-img > path:not(.bg-img)");
     _task.subtaskList.expanded = _expanded;
     expandCard(_task.subtaskList, _card);
@@ -306,12 +247,10 @@ function setSubtaskExpandView(_expanded, _card, _task, _recursive) {
 }
 
 export function freeze() {
-    frozen = true;
     taskBin.classList.add("freeze");
 }
 
 export function thaw() {
-    frozen = false;
     taskBin.classList.remove("freeze");
 }
 
@@ -355,44 +294,11 @@ export function getTaskIdAtPos(_clientX, _clientY) {
     return -1;
 }
 
-function createCardContainer(_classes) {
-    let container = document.createElement("div");
-    container.classList.add(..._classes);
-    return container;
-}
-
-function createCardContainerLabel(_text, _classes) {
-    let label = document.createElement("div");
-    label.textContent = _text;
-    label.classList.add(..._classes);
-    return label;
-}
-
-function expandCard(_task, _div) {
-    if (_task.expanded) {
-        _div.classList.remove("collapsed");
-        _div.classList.add("expanded");
-
-        return;
-    }
-
-    _div.classList.remove("expanded");
-    _div.classList.add("collapsed");
-}
-
-export function createInputBox(_task, _stateManager) {
-    if (_stateManager.currentlyEditing) return;
+export function createInputBox(_task) {
     freeze();
     let body = document.querySelector("body");
     let card = body.querySelector(`.task.id-${_task.id}`);
     card.classList.add("editing");
-
-    _task.currentlyEditing = true;
-    _stateManager.currentlyEditing = true;
-
-    // let cardSpacer = document.createElement("div");
-    // cardSpacer.classList.add("card-spacer")
-    // _body.appendChild(cardSpacer);
 
     let cardInput = document.createElement("div");
     cardInput.classList.add("card-input");
@@ -550,57 +456,65 @@ export function createInputBox(_task, _stateManager) {
     cancel.classList.add("confirm-edit-img", "input-button");
     buttonDiv.appendChild(cancel);
 
-    progressCheck.addEventListener("change", _e => {
-        updateProgressField(progressCheck, progressField);
-    });
-
-    confirm.addEventListener("click", _event => {
-        _task.currentlyEditing = false;
-        _stateManager.currentlyEditing = false;
-
-        _task.title = titleInput.value;
-        _task.dueDateStr = dateInput.value;
-        _task.dueTimeStr = timeInput.value;
-        _task.updateDue();
-        _task.description = descInput.value;
-        _task.priority = getRadioValue(priorityField);
-        _task.useProgressFromSubtasks = progressCheck.checked;
-
-        if (_task.useProgressFromSubtasks) {
-            _task.progress = _task.getProgressRecursive();
-        } else {
-            _task.progress = getRadioValue(progressField);
-        }
-
-        _task.notes = notesInput.value;
-        //_task.expanded = _task.hasContent();
-
-        // let subtaskProgress = _task.getProgressRecursive();
-        // console.log("subtaskProgress: " + subtaskProgress);
-
-        cardInput.remove();
-        thaw();
-        card.classList.remove("editing");
-        _task.supertaskList.writeRootToLocalStorage();
-        _task.refreshDom(false);
-    });
-
-    cancel.addEventListener("click", _event => {
-        _task.currentlyEditing = false;
-        _stateManager.currentlyEditing = false;
-        
-        cardInput.remove();
-        card.classList.remove("editing");
-        thaw();
-    });
+    return {
+        card,
+        cardInput,
+        titleInput,
+        dateInput,
+        timeInput,
+        descInput,
+        priorityField,
+        progressCheck,
+        progressField,
+        notesInput,
+        confirm,
+        cancel
+    };
 }
 
-function updateProgressField(_check, _field) {
+export function updateProgressField(_check, _field) {
     if (_check.checked) {
         _field.setAttribute("disabled", "disabled");
     } else {
         _field.removeAttribute("disabled");
     }
+}
+
+export function getRadioValue(_fieldset) {
+    let radios = _fieldset.querySelectorAll("input");
+
+    for (let i = 0; i < radios.length; i++) {
+        if (radios[i].checked) {
+            return i;
+        }
+    }
+
+    return -1;
+}
+
+function createCardContainer(_classes) {
+    let container = document.createElement("div");
+    container.classList.add(..._classes);
+    return container;
+}
+
+function createCardContainerLabel(_text, _classes) {
+    let label = document.createElement("div");
+    label.textContent = _text;
+    label.classList.add(..._classes);
+    return label;
+}
+
+function expandCard(_task, _div) {
+    if (_task.expanded) {
+        _div.classList.remove("collapsed");
+        _div.classList.add("expanded");
+
+        return;
+    }
+
+    _div.classList.remove("expanded");
+    _div.classList.add("collapsed");
 }
 
 function createRadioField(_name, _defaultValue, _labelArr) {
@@ -627,18 +541,6 @@ function createRadioField(_name, _defaultValue, _labelArr) {
     radios[_defaultValue].setAttribute("checked", "");
 
     return field;
-}
-
-function getRadioValue(_fieldset) {
-    let radios = _fieldset.querySelectorAll("input");
-
-    for (let i = 0; i < radios.length; i++) {
-        if (radios[i].checked) {
-            return i;
-        }
-    }
-
-    return -1;
 }
 
 function createSvg(_path, _title, _useBg, _pathClass) {
