@@ -41,14 +41,9 @@ export function createCard(_task) {
     } else {
         supertaskDiv.appendChild(card);
     }
-    
-    let hDiv = document.createElement("div");
-    hDiv.classList.add("card-header-div");
-    card.appendChild(hDiv);
 
-    let titleContainer = document.createElement("div");
-    titleContainer.classList.add("card-title-container");
-    hDiv.appendChild(titleContainer);
+    let hDiv = createAppend("div", "card-header-div", card);
+    let titleContainer = createAppend("div", "card-title-container", hDiv);
 
     if (_task.priority) {
         titleContainer.appendChild(createPrioritySvg(_task.priority));
@@ -58,33 +53,30 @@ export function createCard(_task) {
         titleContainer.appendChild(createProgressSvg(_task.progress));
     }
 
-    let h2 = document.createElement("h2");
-    h2.textContent = _task.title;
-    h2.classList.add("card-title", "card-editable");
-    titleContainer.appendChild(h2);
-
-    let editSvg = createSvg("M12,2C6.47,2 2,6.47 2,12C2,17.53 6.47,22 12,22C17.53,22 22,17.53 22,12C22,6.47 17.53,2 12,2M15.1,7.07C15.24,7.07 15.38,7.12 15.5,7.23L16.77,8.5C17,8.72 17,9.07 16.77,9.28L15.77,10.28L13.72,8.23L14.72,7.23C14.82,7.12 14.96,7.07 15.1,7.07M13.13,8.81L15.19,10.87L9.13,16.93H7.07V14.87L13.13,8.81Z", 
-        "Edit task", true);
-    editSvg.classList.add("edit-task-img");
-    hDiv.appendChild(editSvg);
+    let h2 = createAppend("h2", [ "card-title", "card-editable" ], 
+        titleContainer, _task.title);
+    let editSvg = createAppend(
+        createSvg("M12,2C6.47,2 2,6.47 2,12C2,17.53 6.47,22 12,22C17.53,22 22,17.53 22,12C22,6.47 17.53,2 12,2M15.1,7.07C15.24,7.07 15.38,7.12 15.5,7.23L16.77,8.5C17,8.72 17,9.07 16.77,9.28L15.77,10.28L13.72,8.23L14.72,7.23C14.82,7.12 14.96,7.07 15.1,7.07M13.13,8.81L15.19,10.87L9.13,16.93H7.07V14.87L13.13,8.81Z", 
+            "Edit task", true),
+        "edit-task-img",
+        hDiv
+    )
 
     if (_task.dueDate) {
-        let dueDate = document.createElement("div");
-        dueDate.textContent = `${dateFormat(_task.dueDate, "dddd, mmmm dS, yyyy")}`;
-        dueDate.classList.add("card-due-date", "card-editable");
-        hDiv.appendChild(dueDate);
+        let dueDate = createAppend("div", [ "card-due-date", "card-editable" ],
+            hDiv, `${dateFormat(_task.dueDate, "dddd, mmmm dS, yyyy")}`);
     }
 
     if (_task.dueTime) {
-        let dueTime = document.createElement("div");
-        dueTime.textContent = `${dateFormat(_task.dueTime, "h:MM TT")}`;
-        dueTime.classList.add("card-due-time", "card-editable");
-        hDiv.appendChild(dueTime);
+        let dueDate = createAppend("div", [ "card-due-time", "card-editable" ],
+            hDiv, `${dateFormat(_task.dueTime, "h:MM TT")}`);
     }
 
-    let taskExpandSvg = createSvg("", "Expand", true);
-    taskExpandSvg.classList.add("task-expand-img");
-    hDiv.appendChild(taskExpandSvg);
+    let taskExpandSvg = createAppend(
+        createSvg("", "Expand", true),
+        "task-expand-img",
+        hDiv
+    );
 
     if (!_task.hasContent()) {
         taskExpandSvg.classList.add("hidden");
@@ -94,66 +86,45 @@ export function createCard(_task) {
     updateTaskExpandView(taskExpandPath, card, _task);
 
     if (_task.priority > 0 || _task.progress > 0) {
-        let infoContainer = document.createElement("div");
-        infoContainer.classList.add("info-container");
-        card.appendChild(infoContainer);
+        let infoContainer = createAppend("div", "info-container", card);
 
         if (_task.priority > 0) {
-            let priorityContainer = createCardContainer([ "card-container" ]);
-            infoContainer.appendChild(priorityContainer);
-    
-            let priorityLabel = createCardContainerLabel("Priority", [ "card-label" ]);
-            priorityContainer.appendChild(priorityLabel);
-
-            let priority = document.createElement("div");
-            priority.textContent = priorityList[_task.priority];
-            priority.classList.add("card-priority", "card-editable");
-            priorityContainer.appendChild(priority);
+            let priorityContainer = createAppend("div", "card-container", 
+                infoContainer);
+            let priorityLabel = createAppend("div", "card-label", 
+                priorityContainer, "Priority");
+            let priority = createAppend("div", 
+                [ "card-priority", "card-editable" ], priorityContainer,
+                priorityList[_task.priority]);
         }
     
         if (_task.progress > 0 || _task.useProgressFromSubtasks) {
-            let progressContainer = createCardContainer([ "card-container" ]);
-            infoContainer.appendChild(progressContainer);
-    
-            let progressLabel = createCardContainerLabel("Progress", [ "card-label" ]);
-            progressContainer.appendChild(progressLabel);
-
-            let prog = document.createElement("div");
-            prog.textContent = progressList[_task.progress];
+            let progressContainer = createAppend("div", "card-container", 
+                infoContainer);
+            let progressLabel = createAppend("div", "card-label", 
+                progressContainer, "Progress");
+            let prog = createAppend("div", 
+                [ "card-progress", "card-editable" ], progressContainer,
+                progressList[_task.progress]);
 
             if (_task.useProgressFromSubtasks) {
                 prog.textContent += " (from subtasks)";
             }
-
-            prog.classList.add("card-progress", "card-editable");
-            progressContainer.appendChild(prog);
         }
     }
 
     if (_task.description.length) {
-        let descContainer = createCardContainer([ "card-container" ]);
-        card.appendChild(descContainer);
-
-        let desc = document.createElement("div");
-        desc.textContent = _task.description;
-        desc.classList.add("card-description", "card-content", "card-editable");
-        descContainer.appendChild(desc);
-
-        let descLabel = createCardContainerLabel("About", [ "card-label" ]);
-        descContainer.appendChild(descLabel);
+        let descContainer = createAppend("div", "card-container", card);
+        let desc = createAppend("div", [ "card-description", "card-content", 
+            "card-editable" ], descContainer, _task.description);
+        let descLabel = createAppend("div", "card-label", descContainer, "About");
     }
 
     if (_task.notes.length) {
-        let notesContainer = createCardContainer([ "card-container" ]);
-        card.appendChild(notesContainer);
-
-        let notes = document.createElement("div");
-        notes.textContent = _task.notes;
-        notes.classList.add("card-notes", "card-content", "card-editable");
-        notesContainer.appendChild(notes);
-
-        let notesLabel = createCardContainerLabel("Notes", [ "card-label" ]);
-        notesContainer.appendChild(notesLabel);
+        let notesContainer = createAppend("div", "card-container", card);
+        let notes = createAppend("div", [ "card-notes", "card-content", 
+            "card-editable" ], notesContainer, _task.notes);
+        let notesLabel = createAppend("div", "card-label", notesContainer, "Notes");
     }
 
     let subtasks = taskBin.querySelector(`.subtasks.id-${_task.id}`);
@@ -165,44 +136,42 @@ export function createCard(_task) {
         card.insertAdjacentElement("afterend", subtasks);
         subtasks.classList.add("subtasks", `id-${_task.id}`);
 
-        var subtasksHeader = document.createElement("div");
-        subtasksHeader.classList.add("subtasks-header", `id-${_task.id}`);
-        subtasksHeader.setAttribute("style", indentStr)
-        subtasks.appendChild(subtasksHeader);
+        var subtasksHeader = createAppend("div", [ "subtasks-header", 
+            `id-${_task.id}` ], subtasks);
+        subtasksHeader.setAttribute("style", indentStr);
 
-        let subtasksPlusSvg = createSvg("", "Subtasks", true);
-        subtasksPlusSvg.classList.add("subtasks-plus-img");
-        subtasksHeader.appendChild(subtasksPlusSvg);
+        if (!_task.subtasks.length) {
+            subtasksHeader.classList.add("hidden");
+        } else {
+            subtasksHeader.classList.remove("hidden");
+        }
+
+        let subtasksPlusSvg = createAppend(
+            createSvg("", "Subtasks", true),
+            "subtasks-plus-img",
+            subtasksHeader
+        );
 
         let subtasksPlusPath = subtasksPlusSvg.querySelector("path:not(.bg-img)");
         setSubtaskExpandView(_task.subtaskList.expanded, subtasks, _task, false);
 
-        let subtasksText = document.createElement("div");
-        subtasksText.classList.add("subtasks-text", `id-${_task.id}`);
-        subtasksHeader.appendChild(subtasksText);
-        
-        subtasksText.textContent = `${_task.subtasks.length} 
-            ${_task.subtasks.length == 1 ? "subtask" : "subtasks"}`;
-
-        if (!_task.subtasks.length) {
-            subtasksHeader.classList.add("hidden");
-        } else {
-            subtasksHeader.classList.remove("hidden");
-        }
+        let subtasksText = createAppend("div", [ "subtasks-text", 
+            `id-${_task.id}` ], subtasksHeader, `${_task.subtasks.length} 
+            ${_task.subtasks.length == 1 ? "subtask" : "subtasks"}`);
     } else {
         subtasks.remove();
         card.insertAdjacentElement("afterend", subtasks);
         var subtasksHeader = subtasks.querySelector(".subtasks-header");
-        let subtasksText = subtasks.querySelector(".subtasks-text");
-        
-        subtasksText.textContent = `${_task.subtasks.length} 
-            ${_task.subtasks.length == 1 ? "subtask" : "subtasks"}`;
 
         if (!_task.subtasks.length) {
             subtasksHeader.classList.add("hidden");
         } else {
             subtasksHeader.classList.remove("hidden");
         }
+
+        let subtasksText = subtasks.querySelector(".subtasks-text");
+        subtasksText.textContent = `${_task.subtasks.length} 
+            ${_task.subtasks.length == 1 ? "subtask" : "subtasks"}`;
     }
 
     return {
@@ -299,162 +268,71 @@ export function createInputBox(_task) {
     let body = document.querySelector("body");
     let card = body.querySelector(`.task.id-${_task.id}`);
     card.classList.add("editing");
+    let cardInput = createAppend("div", "card-input", body);
 
-    let cardInput = document.createElement("div");
-    cardInput.classList.add("card-input");
-    body.appendChild(cardInput);
-
-    let titleFieldContainer = document.createElement("div");
-    titleFieldContainer.classList.add("field-container");
-    cardInput.appendChild(titleFieldContainer);
-
-    let titleLabel = document.createElement("label");
-    titleLabel.setAttribute("for", "input-title");
-    titleLabel.textContent = "Task name";
-    titleFieldContainer.appendChild(titleLabel);
-
-    let titleInput = document.createElement("input");
-    titleInput.setAttribute("type", "text");
-    titleInput.setAttribute("name", "input-title");
-    titleInput.setAttribute("id", "input-title");
-    titleInput.setAttribute("value", _task.title);
-    titleFieldContainer.appendChild(titleInput);
+    let titleInput = createInput("text", null, "input-title", _task.title, 
+        cardInput, "field-container", "Task name");
     titleInput.focus();
     titleInput.setSelectionRange(titleInput.value.length, titleInput.value.length);
 
-    let dueContainer = document.createElement("div");
-    dueContainer.classList.add("due-container", "input-container");
-    cardInput.appendChild(dueContainer);
+    let dueContainer = createAppend("div", [ "due-container", "input-container" ],
+        cardInput);
+    let dateInput = createInput("date", null, "input-date", _task.dueDateStr, 
+        dueContainer, "field-container", "Due date");
+    let timeInput = createInput("time", null, "input-time", _task.dueTimeStr, 
+        dueContainer, "field-container", "Due time");
 
-    let dateFieldContainer = document.createElement("div");
-    dateFieldContainer.classList.add("field-container");
-    dueContainer.appendChild(dateFieldContainer);
+    let descInput = createInput("textarea", null, "input-desc", _task.description, 
+        cardInput, "field-container", "Description");
 
-    let dateLabel = document.createElement("label");
-    dateLabel.setAttribute("for", "input-date");
-    dateLabel.textContent = "Due date";
-    dateFieldContainer.appendChild(dateLabel);
+    let radioContainer = createAppend("div", [ "radio-container", 
+        "input-container" ], cardInput);
 
-    let dateInput = document.createElement("input");
-    dateInput.setAttribute("type", "date");
-    dateInput.setAttribute("name", "input-date");
-    dateInput.setAttribute("id", "input-date");
-    dateInput.setAttribute("value", _task.dueDateStr);
-    dateFieldContainer.appendChild(dateInput);
+    let priorityFieldContainer = createAppend("div", "field-container", 
+        radioContainer);
+    let priorityLabel = createAppend("div", "pseudo-label", priorityFieldContainer,
+        "Priority");
+    let priorityField = createAppend(
+        createRadioField("priority-radio", _task.priority, priorityList),
+        null, priorityFieldContainer);
+    setInputAttributes(priorityField, null, "input-priority");
 
-    let timeFieldContainer = document.createElement("div");
-    timeFieldContainer.classList.add("field-container");
-    dueContainer.appendChild(timeFieldContainer);
-
-    let timeLabel = document.createElement("label");
-    timeLabel.setAttribute("for", "input-time");
-    timeLabel.textContent = "Due time";
-    timeFieldContainer.appendChild(timeLabel);
-
-    let timeInput = document.createElement("input");
-    timeInput.setAttribute("type", "time");
-    timeInput.setAttribute("name", "input-time");
-    timeInput.setAttribute("id", "input-time");
-    timeInput.setAttribute("value", _task.dueTimeStr);
-    timeFieldContainer.appendChild(timeInput);
-
-    let descFieldContainer = document.createElement("div");
-    descFieldContainer.classList.add("field-container");
-    cardInput.appendChild(descFieldContainer);
-
-    let descLabel = document.createElement("label");
-    descLabel.setAttribute("for", "input-desc");
-    descLabel.textContent = "Description";
-    descFieldContainer.appendChild(descLabel);
-
-    let descInput = document.createElement("textarea");
-    descInput.setAttribute("name", "input-desc");
-    descInput.setAttribute("id", "input-desc");
-    descInput.textContent = _task.description;
-    descFieldContainer.appendChild(descInput);
-
-    let radioContainer = document.createElement("div");
-    radioContainer.classList.add("radio-container", "input-container");
-    cardInput.appendChild(radioContainer);
-
-    let priorityFieldContainer = document.createElement("div");
-    priorityFieldContainer.classList.add("field-container");
-    radioContainer.appendChild(priorityFieldContainer);
-
-    let priorityLabel = document.createElement("div");
-    priorityLabel.classList.add("pseudo-label");
-    priorityLabel.textContent = "Priority";
-    priorityFieldContainer.appendChild(priorityLabel);
-
-    let priorityField = createRadioField("priority-radio", _task.priority, priorityList);
-    priorityField.setAttribute("name", "input-priority");
-    priorityField.setAttribute("id", "input-priority");
-    priorityFieldContainer.appendChild(priorityField);
-
-    let progressFieldContainer = document.createElement("div");
-    progressFieldContainer.classList.add("field-container");
-    radioContainer.appendChild(progressFieldContainer);
-
-    let progressLabel = document.createElement("div");
-    progressLabel.classList.add("pseudo-label");
-    progressLabel.textContent = "Progress";
-    progressFieldContainer.appendChild(progressLabel);
-
-    let progressField = createRadioField("progress-radio", _task.progress, progressList);
-    progressField.setAttribute("name", "input-progress");
-    progressField.setAttribute("id", "input-progress");
-    progressFieldContainer.appendChild(progressField);
-
-    let progressCheckContainer = document.createElement("div");
-    progressCheckContainer.classList.add("progress-check-container");
-    progressFieldContainer.appendChild(progressCheckContainer);
-
-    let progressCheck = document.createElement("input");
-    progressCheck.setAttribute("type", "checkbox");
+    let progressFieldContainer = createAppend("div", "field-container", 
+        radioContainer);
+    let progressLabel = createAppend("div", "pseudo-label", 
+        progressFieldContainer, "Progress");
+    let progressField = createAppend(
+        createRadioField("progress-radio", _task.progress, progressList),
+        null, progressFieldContainer);
+    setInputAttributes(progressField, null, "input-progress");
+    let progressCheckContainer = createAppend("div", "progress-check-container",
+        progressFieldContainer);
+    let progressCheck = createAppend("input", null, progressCheckContainer);
+    setInputAttributes(progressCheck, "checkbox", "progress-check");
 
     if (_task.useProgressFromSubtasks) {
         progressCheck.setAttribute("checked", "checked");
     }
 
-    progressCheck.setAttribute("id", "progress-check");
-    progressCheck.setAttribute("name", "progress-check");
-    progressCheck.setAttribute("id", "progress-check");
-    let progressCheckLabel = document.createElement("label");
+    let progressCheckLabel = createAppend("label", null, progressCheckContainer,
+        "Set progress from subtasks");
     progressCheckLabel.setAttribute("for", "progress-check");
-    progressCheckLabel.textContent = "Set progress from subtasks";
-    progressCheckContainer.appendChild(progressCheck);
-    progressCheckContainer.appendChild(progressCheckLabel);
-
     updateProgressField(progressCheck, progressField);
 
-    let notesFieldContainer = document.createElement("div");
-    notesFieldContainer.classList.add("field-container");
-    cardInput.appendChild(notesFieldContainer);
+    let notesInput = createInput("textarea", null, "input-note", _task.notes, 
+        cardInput, "field-container", "Notes");
 
-    let notesLabel = document.createElement("label");
-    notesLabel.setAttribute("for", "input-notes");
-    notesLabel.textContent = "Notes";
-    notesFieldContainer.appendChild(notesLabel);
-
-    let notesInput = document.createElement("textarea");
-    notesInput.setAttribute("name", "input-notes");
-    notesInput.setAttribute("id", "input-notes");
-    notesInput.textContent = _task.notes;
-    notesFieldContainer.appendChild(notesInput);
-
-    let buttonDiv = document.createElement("div");
-    buttonDiv.classList.add("input-buttons");
-    cardInput.appendChild(buttonDiv);
-
-    let confirm = createSvg("M12 2C6.5 2 2 6.5 2 12S6.5 22 12 22 22 17.5 22 12 17.5 2 12 2M10 17L5 12L6.41 10.59L10 14.17L17.59 6.58L19 8L10 17Z",
-        "Confirm", true, "input-button");
-    confirm.classList.add("confirm-edit-img", "input-button");
-    buttonDiv.appendChild(confirm);
-
-    let cancel = createSvg("M9,7L11,12L9,17H11L12,14.5L13,17H15L13,12L15,7H13L12,9.5L11,7H9M12,2A10,10 0 0,1 22,12A10,10 0 0,1 12,22A10,10 0 0,1 2,12A10,10 0 0,1 12,2Z",
-        "Cancel", true, "input-button");
-    cancel.classList.add("confirm-edit-img", "input-button");
-    buttonDiv.appendChild(cancel);
+    let buttonDiv = createAppend("div", "input-buttons", cardInput);
+    let confirm = createAppend(
+        createSvg("M12 2C6.5 2 2 6.5 2 12S6.5 22 12 22 22 17.5 22 12 17.5 2 12 2M10 17L5 12L6.41 10.59L10 14.17L17.59 6.58L19 8L10 17Z",
+        "Confirm", true, "input-button"),
+        [ "confirm-edit-img", "input-button" ], buttonDiv
+    );
+    let cancel = createAppend(
+        createSvg("M9,7L11,12L9,17H11L12,14.5L13,17H15L13,12L15,7H13L12,9.5L11,7H9M12,2A10,10 0 0,1 22,12A10,10 0 0,1 12,22A10,10 0 0,1 2,12A10,10 0 0,1 12,2Z",
+        "Cancel", true, "input-button"),
+        [ "confirm-edit-img", "input-button" ], buttonDiv
+    );
 
     return {
         card,
@@ -470,6 +348,33 @@ export function createInputBox(_task) {
         confirm,
         cancel
     };
+}
+
+function createAppend(_elemType, _classes, _parentElem, _textContent) {
+    // If _elemType is a string, create it; otherwise assume it's an existing
+    // element and use it as passed.
+    if (typeof _elemType == "string") {
+        var elem = document.createElement(_elemType);
+    } else {
+        elem = _elemType;
+    }
+    
+    if (_classes) {
+        // Can pass array of strings or single string.
+        if (typeof _classes == "string") {
+            elem.classList.add(_classes);
+        } else {
+            elem.classList.add(..._classes);
+        }
+    }
+
+    if (_textContent) {
+        elem.textContent = _textContent;
+    }
+
+    _parentElem.appendChild(elem);
+
+    return elem;
 }
 
 export function updateProgressField(_check, _field) {
@@ -492,17 +397,32 @@ export function getRadioValue(_fieldset) {
     return -1;
 }
 
-function createCardContainer(_classes) {
-    let container = document.createElement("div");
-    container.classList.add(..._classes);
-    return container;
+function createInput(_type, _classes, _name, _value, _containerParent, 
+        _containerClasses, _labelText, _labelClasses) {
+    let container = createAppend("div", _containerClasses, _containerParent);
+    let elemLabel = createAppend("label", _labelClasses, container, _labelText);
+    elemLabel.setAttribute("for", _name);
+
+    if (_type == "textarea") {
+        var elem = createAppend("textarea", _classes, container, _value);
+        setInputAttributes(elem, null, _name, null);
+    } else {
+        var elem = createAppend("input", _classes, container);
+        setInputAttributes(elem, _type, _name, _value);
+    }
+
+    return elem;
 }
 
-function createCardContainerLabel(_text, _classes) {
-    let label = document.createElement("div");
-    label.textContent = _text;
-    label.classList.add(..._classes);
-    return label;
+function setInputAttributes(_elem, _type, _nameId, _value) {
+    if (_type) _elem.setAttribute("type", _type);
+
+    if (_nameId) {
+        _elem.setAttribute("name", _nameId);
+        _elem.setAttribute("id", _nameId);
+    }
+
+    if (_value) _elem.setAttribute("value", _value);
 }
 
 function expandCard(_task, _div) {

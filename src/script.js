@@ -112,6 +112,7 @@ class Task {
                 this.domDiv.task.remove();
                 if (_recursive) this.domDiv.subtasks.remove();
             }
+
             return this.supertaskList.removeId(this.id);
         }
 
@@ -778,7 +779,6 @@ let selection = (function() {
     }
 
     let triggerMenu = function(_clientX, _clientY, _selectionAddTo, _isTouch) {
-        let menu;
         let task = taskList.getTaskById(dom.getTaskIdAtPos(_clientX, 
             _clientY), true);
     
@@ -787,71 +787,82 @@ let selection = (function() {
         }
 
         let classes = null;
+
         if (_isTouch) {
             classes = [ "touch-menu" ];
         }
 
         if (task && selection.selected.length) {
-            dom.freeze();
-            let menuTexts = [ "New task (above)", "New task (below)", 
-                "New task (as subtask)", "Copy (with subtasks)", 
-                "Copy (without subtasks)", "Cut (with subtasks)", 
-                "Cut (without subtasks)" ];
-            let menuFunctions = [
-                function() {task.supertaskList.createTask(
-                    task.supertaskList.getTaskIdx(task), true);},
-                function() {task.supertaskList.createTask(
-                    task.supertaskList.getTaskIdx(task) + 1, true);},
-                function() {task.subtaskList.createTask(null, true);},
-                function() {copier.copy(selection.selected, true, taskList);},
-                function() {copier.copy(selection.selected, false, taskList);},
-                function() {copier.cut(selection.selected, true, true, taskList);},
-                function() {copier.cut(selection.selected, false, true, taskList);}
-            ];
-    
-            // Only show paste option if there's something to paste.
-            if (copier.buffer.length) {
-                menuTexts.push("Paste (above)", "Paste (below)", "Paste (as subtask)");
-                menuFunctions.push(
-                    function() {copier.paste(task.supertaskList, 
-                        task.supertaskList.getTaskIdx(task));},
-                    function() {copier.paste(task.supertaskList, 
-                        task.supertaskList.getTaskIdx(task) + 1);},
-                    function() {copier.paste(task.subtaskList);}
-                );
-            }
-
-            menuTexts.push("Delete (with subtasks)",
-                "Delete (without subtasks)");
-            menuFunctions.push(function() {copier.remove(selection.selected, true, 
-                    true)},
-                function() {copier.remove(selection.selected, false, 
-                    true)}
-                );
-    
-            menu = new RightClickMenu(menuTexts, menuFunctions, classes);
-            document.querySelector("body").appendChild(menu.svg);
-
-            menu.buttonDown(_clientX, _clientY);
+            var menu = buildTaskMenu(task, classes);
         } else {
-            dom.freeze();
-            let menuTexts = [ "New task"];
-            let menuFunctions = [
-                function() {taskList.createTask(taskList.tasks.length, 
-                    true);}
-            ];
-
-            if (copier.buffer.length) {
-                menuTexts.push("Paste");
-                menuFunctions.push(function() {copier.paste(taskList, 
-                    taskList.tasks.length)});
-            }
-
-            menu = new RightClickMenu(menuTexts, menuFunctions, classes);
-            document.querySelector("body").appendChild(menu.svg);
-            menu.buttonDown(_clientX, _clientY);
+            var menu = buildBgMenu(classes);
         }
-    }
+
+        document.querySelector("body").appendChild(menu.svg);
+        menu.buttonDown(_clientX, _clientY);
+    };
+
+    let buildTaskMenu = function(_task, _classes) {
+        dom.freeze();
+        let menuTexts = [ "New task (above)", "New task (below)", 
+            "New task (as subtask)", "Copy (with subtasks)", 
+            "Copy (without subtasks)", "Cut (with subtasks)", 
+            "Cut (without subtasks)" ];
+        let menuFunctions = [
+            function() {_task.supertaskList.createTask(
+                _task.supertaskList.getTaskIdx(_task), true);},
+            function() {_task.supertaskList.createTask(
+                _task.supertaskList.getTaskIdx(_task) + 1, true);},
+            function() {_task.subtaskList.createTask(null, true);},
+            function() {copier.copy(selection.selected, true, taskList);},
+            function() {copier.copy(selection.selected, false, taskList);},
+            function() {copier.cut(selection.selected, true, true, taskList);},
+            function() {copier.cut(selection.selected, false, true, taskList);}
+        ];
+
+        // Only show paste option if there's something to paste.
+        if (copier.buffer.length) {
+            menuTexts.push("Paste (above)", "Paste (below)", "Paste (as subtask)");
+            menuFunctions.push(
+                function() {copier.paste(_task.supertaskList, 
+                    _task.supertaskList.getTaskIdx(_task));},
+                function() {copier.paste(task.supertaskList, 
+                    _task.supertaskList.getTaskIdx(_task) + 1);},
+                function() {copier.paste(_task.subtaskList);}
+            );
+        }
+
+        menuTexts.push("Delete (with subtasks)",
+            "Delete (without subtasks)");
+        menuFunctions.push(function() {copier.remove(selection.selected, true, 
+                true)},
+            function() {copier.remove(selection.selected, false, 
+                true)}
+            );
+
+        let menu = new RightClickMenu(menuTexts, menuFunctions, _classes);
+
+        return menu;
+    };
+
+    let buildBgMenu = function(_classes) {
+        dom.freeze();
+        let menuTexts = [ "New task"];
+        let menuFunctions = [
+            function() {taskList.createTask(taskList.tasks.length, 
+                true);}
+        ];
+
+        if (copier.buffer.length) {
+            menuTexts.push("Paste");
+            menuFunctions.push(function() {copier.paste(taskList, 
+                taskList.tasks.length)});
+        }
+
+        let menu = new RightClickMenu(menuTexts, menuFunctions, _classes);
+
+        return menu;
+    };
 
     return {
         selected,
@@ -868,7 +879,8 @@ let selection = (function() {
 let listener = (function() {
     let addLeftClick = function() {
         document.addEventListener("click", _e => {
-            let task = taskList.getTaskById(dom.getTaskIdAtPos(_e.clientX, _e.clientY), true);
+            let task = taskList.getTaskById(dom.getTaskIdAtPos(_e.clientX, 
+                _e.clientY), true);
             let underMouse = document.elementsFromPoint(_e.clientX, _e.clientY);
             
             if (!stateManager.currentlyEditing) {
@@ -915,13 +927,14 @@ let listener = (function() {
                         Math.abs(stateManager.touch.pos[1].y - 
                         stateManager.touch.pos[0].y) < 40) {
                     selection.triggerMenu(stateManager.touch.pos[1].x, 
-                        stateManager.touch.pos[1].y, stateManager.selectionAddTo, true);
+                        stateManager.touch.pos[1].y, stateManager.selectionAddTo, 
+                        true);
                 }
             }
 
             stateManager.touch.touchedId.splice(0, 1);
-            stateManager.touch.touchedId.push(dom.getTaskIdAtPos(_e.touches[0].clientX, 
-                _e.touches[0].clientY));
+            stateManager.touch.touchedId.push(dom.getTaskIdAtPos(
+                _e.touches[0].clientX, _e.touches[0].clientY));
             console.log("Set last touched to " + stateManager.touch.touchedId);
         });
     };
@@ -933,7 +946,8 @@ let listener = (function() {
 
         document.addEventListener("mousedown", _e => {
             if (_e.button == 2 && !stateManager.currentlyEditing) {
-                selection.triggerMenu(_e.clientX, _e.clientY, stateManager.selectionAddTo);
+                selection.triggerMenu(_e.clientX, _e.clientY, 
+                    stateManager.selectionAddTo);
             }
         });
     };
@@ -954,7 +968,8 @@ let listener = (function() {
         let clearData = document.querySelector(".clear-data");
         clearData.addEventListener("click", _e => {
             if (!stateManager.currentlyEditing) {
-                let shouldDelete = confirm("This will delete all saved data. Continue?");
+                let shouldDelete = confirm(
+                    "This will delete all saved data. Continue?");
         
                 if (shouldDelete) {
                     taskList.clear();
@@ -1009,7 +1024,8 @@ let listener = (function() {
             // second-to-last touch was on the button's task's header.
             if (!stateManager.currentlyEditing) {
                 if (_event.pointerType == "touch") {
-                    if (_task.selected && stateManager.touch.touchedId[0] == _task.id) {
+                    if (_task.selected && stateManager.touch.touchedId[0] == 
+                            _task.id) {
                         _task.currentlyEditing = true;
                         stateManager.currentlyEditing = true;
                         let inputBox = dom.createInputBox(_task);
@@ -1027,7 +1043,8 @@ let listener = (function() {
 
     let addInputCard = function(_task, _inputObj) {
         _inputObj.progressCheck.addEventListener("change", _e => {
-            dom.updateProgressField(_inputObj.progressCheck, _inputObj.progressField);
+            dom.updateProgressField(_inputObj.progressCheck, 
+                _inputObj.progressField);
         });
 
         _inputObj.confirm.addEventListener("click", _event => {
@@ -1081,7 +1098,6 @@ let listener = (function() {
 let taskList = new TaskList();
 taskList.restoreFromLocalStorage();
 
-taskList.refreshDom(true);
 listener.addLeftClick();
 listener.addRightClick();
 listener.addModifierKeys();
