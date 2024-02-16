@@ -1,5 +1,8 @@
-// Style menu colors via CSS:
+// Style menu properties via CSS. Font size must be given in px.
 //
+// .menu {
+//     font-size: 24px;
+// }
 // .menu-rect {
 //     fill: color;
 // }
@@ -44,10 +47,15 @@ export default class {
     postInitDelay = 200;
     html;
 
-    constructor (_itemTexts, _functions) {
+    constructor (_itemTexts, _functions, _cssClasses) {
         this.html = document.querySelector("html");
         this.svg = document.createElementNS(namespace, "svg");
         this.svg.classList.add("menu");
+        
+        if (_cssClasses) {
+            this.svg.classList.add(..._cssClasses);
+        }
+
         this.svg.setAttribute("display", "none");
         this.clickReleaseWindow = 500;
         this.group = document.createElementNS(namespace, "g");
@@ -94,6 +102,23 @@ export default class {
     }
 
     init() {
+        let computedFontSize = 
+            window.getComputedStyle(this.svg).getPropertyValue("font-size");
+        
+        if (computedFontSize) {
+            let num = "";
+
+            for (let char of computedFontSize) {
+                let code = char.charCodeAt(0);
+                
+                if (code >= 48 && code <= 57) {
+                    num += char;
+                }
+            }
+
+            this.fontSize = Number(num);
+        }
+        
         this.svg.setAttribute("display", "block");
         this.svg.setAttribute("style", `position: absolute;`);
 

@@ -868,6 +868,11 @@ let selection = (function() {
             updateSelection(task);
         }
 
+        let classes = null;
+        if (_isTouch) {
+            classes = [ "touch-menu" ];
+        }
+
         if (task && selection.selected.length) {
             dom.freeze();
             //selection.add(task);
@@ -899,16 +904,17 @@ let selection = (function() {
                 );
             }
 
-            menuTexts.push("Delete (including subtasks)",
-                "Delete (not including subtasks)");
+            menuTexts.push("Delete (with subtasks)",
+                "Delete (without subtasks)");
             menuFunctions.push(function() {copier.remove(selection.selected, true, 
                     true)},
                 function() {copier.remove(selection.selected, false, 
                     true)}
                 );
     
-            menu = new RightClickMenu(menuTexts, menuFunctions);
+            menu = new RightClickMenu(menuTexts, menuFunctions, classes);
             document.querySelector("body").appendChild(menu.svg);
+
             menu.buttonDown(_clientX, _clientY);
         } else {
             dom.freeze();
@@ -924,13 +930,9 @@ let selection = (function() {
                     taskList.tasks.length)});
             }
 
-            menu = new RightClickMenu(menuTexts, menuFunctions);
+            menu = new RightClickMenu(menuTexts, menuFunctions, classes);
             document.querySelector("body").appendChild(menu.svg);
             menu.buttonDown(_clientX, _clientY);
-        }
-
-        if (_isTouch) {
-            menu.svg.classList.add("touch-menu");
         }
         
         // else if (copier.buffer.length) {
