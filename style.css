@@ -343,7 +343,8 @@ input[type="checkbox"] {
 .card-header-div {
     display: grid;
     grid-template-columns: 1fr;
-    grid-template-rows: 32px auto auto 4px;
+    /* grid-template-rows: 32px auto auto 4px; */
+    grid-template-rows: minmax(32px, auto) auto auto 4px;
     justify-content: space-between;
     justify-items: start;
     align-items: center;
@@ -492,12 +493,13 @@ input[type="checkbox"] {
 
 .menu {
     overflow: hidden;
+    font-size: 20px;
     /* z-index: 3; */
 }
 
-/* .touch-menu .menu-text {
-    font-size: 24px;
-} */
+.menu.touch-menu {
+    font-size: 26px;
+}
 
 .menu-rect {
     fill: var(--card-bg-col);
