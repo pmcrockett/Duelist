@@ -281,8 +281,12 @@ class TaskList {
         this.writeRootToLocalStorage();
 
         if (_showInput && !stateManager.currentlyEditing) {
+            newTask.currentlyEditing = true;
+            stateManager.currentlyEditing = true;
             let inputBox = dom.createInputBox(newTask);
             listener.addInputCard(newTask, inputBox);
+
+            // window.setTimeout(function() {newTask.domDiv.editOpen.dispatchEvent(new Event("click"))}, 1);
         }
     }
 
@@ -307,10 +311,8 @@ class TaskList {
     }
 
     removeId(_id) {
-        console.log(`Looking for id ${_id} in tasks length ${this.tasks.length}`);
         for (let i = 0; i < this.tasks.length; i++) {
             if (this.tasks[i].id == _id) {
-                console.log(`Removing id ${_id} at idx ${i}`);
                 return this.removeIdx(i);
             }
         }
@@ -945,6 +947,7 @@ let listener = (function() {
         });
 
         document.addEventListener("mousedown", _e => {
+            _e.stopPropagation();
             if (_e.button == 2 && !stateManager.currentlyEditing) {
                 selection.triggerMenu(_e.clientX, _e.clientY, 
                     stateManager.selectionAddTo);
@@ -961,6 +964,12 @@ let listener = (function() {
         document.addEventListener("keyup", _e => {
             stateManager.setSelectionAddTo.bind(stateManager, false, _e)();
             stateManager.setSelectionMass.bind(stateManager, false, _e)();
+        });
+
+        document.addEventListener("keydown", _e => {
+            if (_e.key == "Enter") {
+                document.activeElement.dispatchEvent(new Event("click"));
+            }
         });
     };
 
@@ -1067,10 +1076,10 @@ let listener = (function() {
     
             _task.notes = _inputObj.notesInput.value;
             _inputObj.cardInput.remove();
-            dom.thaw();
             _inputObj.card.classList.remove("editing");
             _task.supertaskList.writeRootToLocalStorage();
             _task.refreshDom(false);
+            dom.thaw();
         });
     
         _inputObj.cancel.addEventListener("click", _event => {

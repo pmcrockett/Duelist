@@ -6,7 +6,7 @@ module.exports = {
         filename: 'main.js',
         path: path.resolve(__dirname, 'dist'),
     },
-    mode: 'production',
+    mode: 'development',
     devtool: 'inline-source-map',
     devServer: {
         static: './dist',

@@ -88,12 +88,13 @@ export default class {
                 let menuSelection = this.getHighlighted();
                 let menuMouseOver = document.elementsFromPoint(_e.clientX, _e.clientY);
     
+                this.svg.remove();
+
                 if (menuSelection && menuMouseOver.includes(menuSelection.rect)) {
                     this.activateSelection();
                 }
     
                 this.erase();
-                this.svg.remove();
             }
         });
     }

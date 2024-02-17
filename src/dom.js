@@ -61,6 +61,7 @@ export function createCard(_task) {
         "edit-task-img",
         hDiv
     )
+    editSvg.setAttribute("tabindex", "0");
 
     if (_task.dueDate) {
         let dueDate = createAppend("div", [ "card-due-date", "card-editable" ],
@@ -77,6 +78,7 @@ export function createCard(_task) {
         "task-expand-img",
         hDiv
     );
+    taskExpandSvg.setAttribute("tabindex", "0")
 
     if (!_task.hasContent()) {
         taskExpandSvg.classList.add("hidden");
@@ -158,6 +160,7 @@ export function createCard(_task) {
         let subtasksText = createAppend("div", [ "subtasks-text", 
             `id-${_task.id}` ], subtasksHeader, `${_task.subtasks.length} 
             ${_task.subtasks.length == 1 ? "subtask" : "subtasks"}`);
+        subtasksHeader.setAttribute("tabindex", "0");
     } else {
         subtasks.remove();
         card.insertAdjacentElement("afterend", subtasks);
@@ -217,10 +220,18 @@ export function setSubtaskExpandView(_expanded, _card, _task, _recursive) {
 
 export function freeze() {
     taskBin.classList.add("freeze");
+    let focusable = document.querySelectorAll('[tabindex="0"]:not(body)');
+    for (let elem of focusable) {
+        elem.setAttribute("tabindex", "-1");
+    }
 }
 
 export function thaw() {
     taskBin.classList.remove("freeze");
+    let focusable = document.querySelectorAll('[tabindex="-1"]:not(body)');
+    for (let elem of focusable) {
+        elem.setAttribute("tabindex", "0");
+    }
 }
 
 export function select(_taskId) {
@@ -272,8 +283,12 @@ export function createInputBox(_task) {
 
     let titleInput = createInput("text", null, "input-title", _task.title, 
         cardInput, "field-container", "Task name");
-    titleInput.focus();
-    titleInput.setSelectionRange(titleInput.value.length, titleInput.value.length);
+    // Setting timeout here is a workaround for the body mysteriously getting
+    // focused in some contexts after this function is called.
+    window.setTimeout(function() {
+        titleInput.focus();
+        titleInput.setSelectionRange(titleInput.value.length, titleInput.value.length);
+    }, 1);
 
     let dueContainer = createAppend("div", [ "due-container", "input-container" ],
         cardInput);
@@ -328,11 +343,13 @@ export function createInputBox(_task) {
         "Confirm", true, "input-button"),
         [ "confirm-edit-img", "input-button" ], buttonDiv
     );
+    confirm.setAttribute("tabindex", "0")
     let cancel = createAppend(
         createSvg("M9,7L11,12L9,17H11L12,14.5L13,17H15L13,12L15,7H13L12,9.5L11,7H9M12,2A10,10 0 0,1 22,12A10,10 0 0,1 12,22A10,10 0 0,1 2,12A10,10 0 0,1 12,2Z",
         "Cancel", true, "input-button"),
         [ "confirm-edit-img", "input-button" ], buttonDiv
     );
+    cancel.setAttribute("tabindex", "0")
 
     return {
         card,
