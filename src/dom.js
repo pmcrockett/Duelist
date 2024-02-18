@@ -49,8 +49,10 @@ export function createCard(_task) {
         titleContainer.appendChild(createPrioritySvg(_task.priority));
     }
 
+    let progressSvg = null;
     if (_task.progress) {
-        titleContainer.appendChild(createProgressSvg(_task.progress));
+        progressSvg = createProgressSvg(_task.progress);
+        titleContainer.appendChild(progressSvg);
     }
 
     let h2 = createAppend("h2", [ "card-title", "card-editable" ], 
@@ -187,7 +189,8 @@ export function createCard(_task) {
         taskExpand: expandButton,
         taskExpandPath: taskExpandPath,
         header: hDiv,
-        editOpen: editButton
+        editOpen: editButton,
+        progressSvg
     };
 }
 

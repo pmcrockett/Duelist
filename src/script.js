@@ -157,6 +157,10 @@ class Task {
             this.domDiv.taskExpandPath, this.domDiv.header);
         listener.addOpenEdit(this.domDiv.editOpen, this);
 
+        if (this.domDiv.progressSvg && !this.useProgressFromSubtasks) {
+            listener.addProgress(this.domDiv.progressSvg, this);
+        }
+
         if (this.domDiv.needSubtasksListener) {
             listener.addExpandSubtasks(this.domDiv.subtasksExpand, this, 
                 this.domDiv.subtasks);
@@ -627,7 +631,7 @@ let copier = (function() {
         }
 
         this.copy(_tasks, _recursive, _globalTaskList);
-        this.remove(_tasks, _recursive);
+        this.remove(_tasks, _recursive, _refresh);
     };
 
     let paste = function(_taskList, _idx) {
@@ -635,6 +639,8 @@ let copier = (function() {
         if (_taskList instanceof Task) {
             _taskList = _taskList.subtaskList;
         }
+
+        if (!_idx) _idx = _taskList.tasks.length;
 
         if (buffer.length) {
             for (let bufItem of buffer) {
@@ -1045,6 +1051,15 @@ let listener = (function() {
         });
     };
 
+    let addProgress = function(_svgElem, _task) {
+        _svgElem.addEventListener("click", _event => {
+            if (!stateManager.currentlyEditing) {
+                _task.progress = Math.max((_task.progress + 1) % 4, 1);
+                _task.refreshDom(false);
+            }
+        });
+    };
+
     let addOpenEdit = function(_elem, _task) {
         _elem.addEventListener("click", _event => {
             // Because mouseover doesn't exist on a touchscreen, the edit button is
@@ -1119,6 +1134,7 @@ let listener = (function() {
         addClearData,
         addExpandSubtasks,
         addExpandTask,
+        addProgress,
         addOpenEdit,
         addInputCard
     };
