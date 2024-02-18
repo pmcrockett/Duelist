@@ -285,8 +285,6 @@ class TaskList {
             stateManager.currentlyEditing = true;
             let inputBox = dom.createInputBox(newTask);
             listener.addInputCard(newTask, inputBox);
-
-            // window.setTimeout(function() {newTask.domDiv.editOpen.dispatchEvent(new Event("click"))}, 1);
         }
     }
 
@@ -464,6 +462,8 @@ class TaskList {
                 let jsonStr = JSON.parse(jsonObj);
                 this.initFromJson(jsonStr);
                 this.refreshDom(true);
+                
+                if (this.hasTasks()) dom.hideInstructions();
 
                 return true;
             }
@@ -509,13 +509,13 @@ let stateManager = (function() {
         if (_e.key == "Control") {
             stateManager.selectionAddTo = _state;
         }
-    }
+    };
 
     let setSelectionMass = function(_state, _e) {
         if (_e.key == "Shift") {
             stateManager.selectionMass = _state;
         }
-    }
+    };
 
     return {
         currentlyEditing,
@@ -597,7 +597,7 @@ let copier = (function() {
         }
 
         root.writeToLocalStorage();
-    }
+    };
 
     let copy = function(_tasks, _recursive, _globalTaskList) {
         if (!(_tasks instanceof Array)) {
@@ -619,7 +619,7 @@ let copier = (function() {
         for (let task of _tasks) {
             buffer.push(task.clone(_recursive));
         }
-    }
+    };
 
     let cut = function(_tasks, _recursive, _refresh, _globalTaskList) {
         if (!(_tasks instanceof Array)) {
@@ -628,7 +628,7 @@ let copier = (function() {
 
         this.copy(_tasks, _recursive, _globalTaskList);
         this.remove(_tasks, _recursive);
-    }
+    };
 
     let paste = function(_taskList, _idx) {
         // Allow _taskList to be passed as its owning task for ease of use.
@@ -655,7 +655,7 @@ let copier = (function() {
         }
 
         return false;
-    }
+    };
 
     let reduceRecursiveInput = function(_tasks) {
         const reduced = [];
@@ -683,11 +683,11 @@ let copier = (function() {
         }
 
         return reduced;
-    }
+    };
 
     let clearBuffer = function() {
         buffer.splice(0, buffer.length);
-    }
+    };
 
     return {
         buffer,
@@ -778,7 +778,7 @@ let selection = (function() {
         } else {
             selection.addExclusive(_task);
         }
-    }
+    };
 
     let triggerMenu = function(_clientX, _clientY, _selectionAddTo, _isTouch) {
         let task = taskList.getTaskById(dom.getTaskIdAtPos(_clientX, 
@@ -818,8 +818,14 @@ let selection = (function() {
             function() {_task.subtaskList.createTask(null, true);},
             function() {copier.copy(selection.selected, true, taskList);},
             function() {copier.copy(selection.selected, false, taskList);},
-            function() {copier.cut(selection.selected, true, true, taskList);},
-            function() {copier.cut(selection.selected, false, true, taskList);}
+            function() {
+                copier.cut(selection.selected, true, true, taskList);
+                if (!taskList.hasTasks()) showInstructions();
+            },
+            function() {
+                copier.cut(selection.selected, false, true, taskList);
+                if (!taskList.hasTasks()) showInstructions();
+            }
         ];
 
         // Only show paste option if there's something to paste.
@@ -828,7 +834,7 @@ let selection = (function() {
             menuFunctions.push(
                 function() {copier.paste(_task.supertaskList, 
                     _task.supertaskList.getTaskIdx(_task));},
-                function() {copier.paste(task.supertaskList, 
+                function() {copier.paste(_task.supertaskList, 
                     _task.supertaskList.getTaskIdx(_task) + 1);},
                 function() {copier.paste(_task.subtaskList);}
             );
@@ -836,10 +842,14 @@ let selection = (function() {
 
         menuTexts.push("Delete (with subtasks)",
             "Delete (without subtasks)");
-        menuFunctions.push(function() {copier.remove(selection.selected, true, 
-                true)},
-            function() {copier.remove(selection.selected, false, 
-                true)}
+        menuFunctions.push(function() {
+                copier.remove(selection.selected, true, true);
+                if (!taskList.hasTasks()) showInstructions();
+            },
+            function() {
+                copier.remove(selection.selected, false, true);
+                if (!taskList.hasTasks()) showInstructions();
+            }
             );
 
         let menu = new RightClickMenu(menuTexts, menuFunctions, _classes);
@@ -851,19 +861,35 @@ let selection = (function() {
         dom.freeze();
         let menuTexts = [ "New task"];
         let menuFunctions = [
-            function() {taskList.createTask(taskList.tasks.length, 
-                true);}
+            function() {
+                if (!taskList.hasTasks()) hideInstructions();
+                taskList.createTask(taskList.tasks.length, true);
+            }
         ];
 
         if (copier.buffer.length) {
             menuTexts.push("Paste");
-            menuFunctions.push(function() {copier.paste(taskList, 
-                taskList.tasks.length)});
+            menuFunctions.push(function() {
+                if (!taskList.hasTasks()) hideInstructions();
+                copier.paste(taskList, taskList.tasks.length)
+            });
         }
 
         let menu = new RightClickMenu(menuTexts, menuFunctions, _classes);
 
         return menu;
+    };
+
+    let showInstructions = function() {
+        if (!taskList.hasTasks()) {
+            dom.showInstructions()
+        }
+    };
+
+    let hideInstructions = function() {
+        if (!taskList.hasTasks()) {
+            dom.hideInstructions()
+        }
     };
 
     return {
@@ -875,7 +901,7 @@ let selection = (function() {
         contains,
         updateSelection,
         triggerMenu
-    }
+    };
 })();
 
 let listener = (function() {
@@ -922,7 +948,8 @@ let listener = (function() {
             stateManager.touch.pos.push({ x: _e.touches[0].clientX, 
                 y: _e.touches[0].clientY });
 
-            if (stateManager.touch.time[0] && 
+            if (!stateManager.currentlyEditing &&
+                stateManager.touch.time[0] && 
                 stateManager.touch.time[1] - stateManager.touch.time[0]< 300) {
                 if (Math.abs(stateManager.touch.pos[1].x - 
                         stateManager.touch.pos[0].x) < 40 &&
@@ -937,7 +964,6 @@ let listener = (function() {
             stateManager.touch.touchedId.splice(0, 1);
             stateManager.touch.touchedId.push(dom.getTaskIdAtPos(
                 _e.touches[0].clientX, _e.touches[0].clientY));
-            console.log("Set last touched to " + stateManager.touch.touchedId);
         });
     };
 
@@ -964,12 +990,6 @@ let listener = (function() {
         document.addEventListener("keyup", _e => {
             stateManager.setSelectionAddTo.bind(stateManager, false, _e)();
             stateManager.setSelectionMass.bind(stateManager, false, _e)();
-        });
-
-        document.addEventListener("keydown", _e => {
-            if (_e.key == "Enter") {
-                document.activeElement.dispatchEvent(new Event("click"));
-            }
         });
     };
 
@@ -1090,7 +1110,7 @@ let listener = (function() {
             _inputObj.card.classList.remove("editing");
             dom.thaw();
         });
-    }
+    };
 
     return {
         addLeftClick,

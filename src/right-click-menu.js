@@ -268,7 +268,6 @@ class MenuItem {
         _parent.appendChild(this.group);
         this.svgText = new SVGText(_text, this.group, _idx, _fontSize);
         this.rect.setAttribute("fill", "rgba(0, 0, 0, 0)");
-        //this.rect.setAttribute("display", "none");
         this.rect.setAttribute("height", `${_fontSize * 1.2}`);
         this.rect.classList.add("menu-item");
         

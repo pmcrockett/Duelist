@@ -55,13 +55,14 @@ export function createCard(_task) {
 
     let h2 = createAppend("h2", [ "card-title", "card-editable" ], 
         titleContainer, _task.title);
+    let editButton = createAppend("button", [ "button", "edit-task-button" ], hDiv);
+    editButton.setAttribute("tabindex", "0");
     let editSvg = createAppend(
         createSvg("M12,2C6.47,2 2,6.47 2,12C2,17.53 6.47,22 12,22C17.53,22 22,17.53 22,12C22,6.47 17.53,2 12,2M15.1,7.07C15.24,7.07 15.38,7.12 15.5,7.23L16.77,8.5C17,8.72 17,9.07 16.77,9.28L15.77,10.28L13.72,8.23L14.72,7.23C14.82,7.12 14.96,7.07 15.1,7.07M13.13,8.81L15.19,10.87L9.13,16.93H7.07V14.87L13.13,8.81Z", 
             "Edit task", true),
         "edit-task-img",
-        hDiv
-    )
-    editSvg.setAttribute("tabindex", "0");
+        editButton
+    );
 
     if (_task.dueDate) {
         let dueDate = createAppend("div", [ "card-due-date", "card-editable" ],
@@ -73,15 +74,16 @@ export function createCard(_task) {
             hDiv, `${dateFormat(_task.dueTime, "h:MM TT")}`);
     }
 
+    let expandButton = createAppend("button", [ "button", "task-expand-button" ], hDiv);
+    expandButton.setAttribute("tabindex", "0");
     let taskExpandSvg = createAppend(
         createSvg("", "Expand", true),
         "task-expand-img",
-        hDiv
+        expandButton
     );
-    taskExpandSvg.setAttribute("tabindex", "0")
 
     if (!_task.hasContent()) {
-        taskExpandSvg.classList.add("hidden");
+        expandButton.classList.add("hidden");
     }
 
     let taskExpandPath = taskExpandSvg.querySelector("path:not(.bg-img)");
@@ -138,38 +140,38 @@ export function createCard(_task) {
         card.insertAdjacentElement("afterend", subtasks);
         subtasks.classList.add("subtasks", `id-${_task.id}`);
 
-        var subtasksHeader = createAppend("div", [ "subtasks-header", 
+        var subtasksButton = createAppend("button", [ "subtasks-button", "button", 
             `id-${_task.id}` ], subtasks);
-        subtasksHeader.setAttribute("style", indentStr);
+        subtasksButton.setAttribute("style", indentStr);
 
         if (!_task.subtasks.length) {
-            subtasksHeader.classList.add("hidden");
+            subtasksButton.classList.add("hidden");
         } else {
-            subtasksHeader.classList.remove("hidden");
+            subtasksButton.classList.remove("hidden");
         }
 
         let subtasksPlusSvg = createAppend(
             createSvg("", "Subtasks", true),
             "subtasks-plus-img",
-            subtasksHeader
+            subtasksButton
         );
 
         let subtasksPlusPath = subtasksPlusSvg.querySelector("path:not(.bg-img)");
         setSubtaskExpandView(_task.subtaskList.expanded, subtasks, _task, false);
 
         let subtasksText = createAppend("div", [ "subtasks-text", 
-            `id-${_task.id}` ], subtasksHeader, `${_task.subtasks.length} 
+            `id-${_task.id}` ], subtasksButton, `${_task.subtasks.length} 
             ${_task.subtasks.length == 1 ? "subtask" : "subtasks"}`);
-        subtasksHeader.setAttribute("tabindex", "0");
+        subtasksButton.setAttribute("tabindex", "0");
     } else {
         subtasks.remove();
         card.insertAdjacentElement("afterend", subtasks);
-        var subtasksHeader = subtasks.querySelector(".subtasks-header");
+        var subtasksButton = subtasks.querySelector(".subtasks-button");
 
         if (!_task.subtasks.length) {
-            subtasksHeader.classList.add("hidden");
+            subtasksButton.classList.add("hidden");
         } else {
-            subtasksHeader.classList.remove("hidden");
+            subtasksButton.classList.remove("hidden");
         }
 
         let subtasksText = subtasks.querySelector(".subtasks-text");
@@ -180,13 +182,23 @@ export function createCard(_task) {
     return {
         task: card,
         subtasks: subtasks,
-        subtasksExpand: subtasksHeader,
+        subtasksExpand: subtasksButton,
         needSubtasksListener,
-        taskExpand: taskExpandSvg,
+        taskExpand: expandButton,
         taskExpandPath: taskExpandPath,
         header: hDiv,
-        editOpen: editSvg
+        editOpen: editButton
     };
+}
+
+export function showInstructions() {
+    let inst = taskBin.querySelector(".instructions");
+    inst.classList.remove("hidden");
+}
+
+export function hideInstructions() {
+    let inst = taskBin.querySelector(".instructions");
+    inst.classList.add("hidden");
 }
 
 export function updateTaskExpandView(_svgPath, _card, _task) {
@@ -338,18 +350,23 @@ export function createInputBox(_task) {
         cardInput, "field-container", "Notes");
 
     let buttonDiv = createAppend("div", "input-buttons", cardInput);
-    let confirm = createAppend(
+    let confirmButton = createAppend("button", [ "button", "confirm-button",
+        "input-button" ], buttonDiv);
+    confirmButton.setAttribute("tabindex", "0");
+    let confirmSvg = createAppend(
         createSvg("M12 2C6.5 2 2 6.5 2 12S6.5 22 12 22 22 17.5 22 12 17.5 2 12 2M10 17L5 12L6.41 10.59L10 14.17L17.59 6.58L19 8L10 17Z",
-        "Confirm", true, "input-button"),
-        [ "confirm-edit-img", "input-button" ], buttonDiv
+        "Confirm", true),
+        "input-button-img", confirmButton
     );
-    confirm.setAttribute("tabindex", "0")
-    let cancel = createAppend(
+    let cancelButton = createAppend("button", [ "button", "cancel-button",
+        "input-button" ],
+        buttonDiv);
+    cancelButton.setAttribute("tabindex", "0");
+    let cancelSvg = createAppend(
         createSvg("M9,7L11,12L9,17H11L12,14.5L13,17H15L13,12L15,7H13L12,9.5L11,7H9M12,2A10,10 0 0,1 22,12A10,10 0 0,1 12,22A10,10 0 0,1 2,12A10,10 0 0,1 12,2Z",
-        "Cancel", true, "input-button"),
-        [ "confirm-edit-img", "input-button" ], buttonDiv
+        "Cancel", true),
+        "input-button-img", cancelButton
     );
-    cancel.setAttribute("tabindex", "0")
 
     return {
         card,
@@ -362,8 +379,8 @@ export function createInputBox(_task) {
         progressCheck,
         progressField,
         notesInput,
-        confirm,
-        cancel
+        confirm: confirmButton,
+        cancel: cancelButton
     };
 }
 
@@ -547,3 +564,4 @@ function createProgressSvg(_progress) {
 
     return progressSvg;
 }
+// window.setTimeout(function() {newTask.domDiv.editOpen.dispatchEvent(new Event("click"))}, 1);

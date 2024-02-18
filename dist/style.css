@@ -26,7 +26,7 @@
     --card-header-hover-col: rgb(45, 94, 255);
     --card-bg-col: rgb(210, 221, 255);
     --card-bg-hover-col: rgb(255, 255, 255);
-    --card-select-col: rgb(0, 183, 255);
+    --card-select-col: rgb(131, 199, 255);
     --field-col: rgb(229, 237, 255);
     --shadow-col: rgb(0, 0, 0);
     --card-indent: 32px;
@@ -40,7 +40,7 @@
         calc(var(--input-card-margin) * 2));
     --input-field-half-width: calc(calc(var(--input-card-max-width) * 0.5) - 
         calc(var(--input-card-margin) * 2));
-    --title-font-size: 26px;
+    --title-font-size: 22px;
     user-select: none;
     font-family: Jost-Reg, Arial, Helvetica, sans-serif;
 }
@@ -57,6 +57,26 @@ body {
 .bg-img {
     fill: var(--card-bg-hover-col);
     width: 12px;
+}
+
+button {
+    font-family: Jost-Reg, Arial, Helvetica, sans-serif;
+    font-size: small;
+    background-color: rgba(0, 0, 0, 0);
+    border-style: none;
+    padding: 0px
+}
+
+.task-bin:not(.freeze) button:active > svg,
+button.input-button:active > svg {
+    fill: var(--card-select-col);
+}
+
+.instructions {
+    color: var(--card-header-col);
+    margin: 15vh 2vh 0px 2vh;
+    text-align: center;
+    font-size: 4vh;
 }
 
 
@@ -78,6 +98,7 @@ body {
     justify-self: center;
     position: fixed;
     top: 10vh;
+    z-index: 12;
 }
 
 input, textarea {
@@ -187,15 +208,16 @@ input[type="checkbox"] {
     justify-content: end;
 }
 
-.confirm-edit-img {
+.confirm-button, .cancel-button {
+    width: 32px;
+    height: 32px;
+}
+
+.input-button-img {
     fill: var(--card-header-col);
     width: 32px;
     height: 32px;
     filter: var(--shadow-s);
-}
-
-.confirm-edit-img:hover {
-    fill: var(--card-header-hover-col);
 }
 
 
@@ -227,21 +249,25 @@ input[type="checkbox"] {
     padding-bottom: 0px;
 }
 
-.task-bin:not(.freeze) .task-expand-img:hover, 
-.task-bin:not(.freeze) .subtasks-header:hover > .subtasks-plus-img {
+.input-button:hover:not(:active) > svg,
+.task-bin:not(.freeze) button:hover:not(:active) > svg {
     fill: var(--card-header-hover-col);
 }
 
-.task-bin:not(.freeze) .subtasks-header:hover > .subtasks-text {
+.task-bin:not(.freeze) .subtasks-button:hover > .subtasks-text {
     background-color: var(--card-bg-hover-col);
 }
 
-.task-bin:not(.freeze) .card-header-div.hover-possible:hover > .edit-task-img {
+.task-bin:not(.freeze) .subtasks-button:active > .subtasks-text {
+    background-color: var(--card-select-col);
+}
+
+.task-bin:not(.freeze) .card-header-div.hover-possible:hover > .edit-task-button {
     display: grid;
     filter: var(--shadow-l);
 }
 
-.task-bin:not(.freeze) .edit-task-img:hover {
+.task-bin:not(.freeze) .edit-task-img:hover:not(:active) > svg {
     fill: var(--card-header-hover-col);
 }
 
@@ -346,7 +372,7 @@ input[type="checkbox"] {
 }
 
 .task.collapsed .card-container,
-.subtasks.collapsed > div:not(.subtasks-header) {
+.subtasks.collapsed > div:not(.subtasks-button) {
     display: none;
 }
 
@@ -354,14 +380,21 @@ input[type="checkbox"] {
     text-decoration-line: line-through;
 }
 
-.edit-task-img {
+.edit-task-button {
     display: none;
-    fill: var(--card-header-col);
     width: 32px;
     height: 32px;
     grid-area: 1 / 1 / 2 / 2;
     justify-self: end;
     align-self: center;
+    align-content: center;
+    justify-content: center;
+}
+
+.edit-task-img {
+    width: 32px;
+    height: 32px;
+    fill: var(--card-header-col);
 }
 
 .priority-img, .progress-img {
@@ -387,20 +420,26 @@ input[type="checkbox"] {
     fill: red;
 }
 
-.task-expand-img {
+.task-expand-button {
     width: 32px;
     height: 32px;
     justify-self: center;
     grid-area: 4 / 1 / 5 / 2;
+    justify-content: center;
+    align-content: center;
+}
+
+.task-expand-img {
+    width: 32px;
+    height: 32px;
     fill: var(--card-header-col);
     filter: var(--shadow-x-only);
 }
 
 
-
 /* SUBTASK ELEMNTS */
 
-.subtasks-header {
+.subtasks-button {
     margin: 4px 0px 4px 0px;
     width: fit-content;
     display: grid;
@@ -476,6 +515,10 @@ input[type="checkbox"] {
 
 .task-bin:not(.freeze) + .clear-data:hover {
     background-color: var(--card-bg-hover-col);
+}
+
+.task-bin:not(.freeze) + .clear-data:active {
+    background-color: var(--card-select-col);
 }
 
 
