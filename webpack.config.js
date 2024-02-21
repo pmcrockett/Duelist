@@ -1,14 +1,15 @@
-const path = require('path');
+import path from "path";
+const __dirname = import.meta.dirname;
 
-module.exports = {
-    entry: './src/script.js',
-    output: {
-        filename: 'main.js',
-        path: path.resolve(__dirname, 'dist'),
-    },
-    mode: 'production',
-    devtool: 'inline-source-map',
-    devServer: {
-        static: './dist',
-    },
+export default {
+  entry: "./src/script.js",
+  output: {
+    filename: "main.js",
+    path: path.resolve(__dirname, "dist"),
+  },
+  mode: "production",
+  devtool: "inline-source-map",
+  devServer: {
+    static: "./dist",
+  },
 };
