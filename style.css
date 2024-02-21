@@ -1,530 +1,532 @@
 @font-face {
-    font-family: Assistant-Reg;
-    src: url(./Assistant-Regular.ttf);
+  font-family: Assistant-Reg;
+  src: url(./Assistant-Regular.ttf);
 }
 
 @font-face {
-    font-family: Jost-Reg;
-    src: url(./Jost-Regular.ttf);
+  font-family: Jost-Reg;
+  src: url(./Jost-Regular.ttf);
 }
 
 @font-face {
-    font-family: Spline-Sans-Mono-Reg;
-    src: url(./SplineSansMono-Regular.ttf);
+  font-family: Spline-Sans-Mono-Reg;
+  src: url(./SplineSansMono-Regular.ttf);
 }
 
 * {
-    margin: 0px;
+  margin: 0px;
 }
 
 ::selection {
-    background: var(--card-select-col);
+  background: var(--card-select-col);
 }
 
 :root {
-    --card-header-col: rgb(74, 103, 201);
-    --card-header-hover-col: rgb(45, 94, 255);
-    --card-bg-col: rgb(210, 221, 255);
-    --card-bg-hover-col: rgb(255, 255, 255);
-    --card-select-col: rgb(131, 199, 255);
-    --field-col: rgb(229, 237, 255);
-    --shadow-col: rgb(0, 0, 0);
-    --card-indent: 32px;
-    --card-margin: 14px;
-    --shadow-s: drop-shadow(1px 1px 1px var(--shadow-col));
-    --shadow-l: drop-shadow(2px 2px 2px var(--shadow-col));
-    --shadow-x-only: drop-shadow(2px 0px 2px var(--shadow-col));
-    --input-card-max-width: 300px;
-    --input-card-margin: 8px;
-    --input-field-width: calc(var(--input-card-max-width) - 
-        calc(var(--input-card-margin) * 2));
-    --input-field-half-width: calc(calc(var(--input-card-max-width) * 0.5) - 
-        calc(var(--input-card-margin) * 2));
-    --title-font-size: 22px;
-    user-select: none;
-    font-family: Jost-Reg, Arial, Helvetica, sans-serif;
+  --card-header-col: rgb(74, 103, 201);
+  --card-header-hover-col: rgb(45, 94, 255);
+  --card-bg-col: rgb(210, 221, 255);
+  --card-bg-hover-col: rgb(255, 255, 255);
+  --card-select-col: rgb(131, 199, 255);
+  --field-col: rgb(229, 237, 255);
+  --shadow-col: rgb(0, 0, 0);
+  --card-indent: 32px;
+  --card-margin: 14px;
+  --shadow-s: drop-shadow(1px 1px 1px var(--shadow-col));
+  --shadow-l: drop-shadow(2px 2px 2px var(--shadow-col));
+  --shadow-x-only: drop-shadow(2px 0px 2px var(--shadow-col));
+  --input-card-max-width: 300px;
+  --input-card-margin: 8px;
+  --input-field-width: calc(
+    var(--input-card-max-width) - calc(var(--input-card-margin) * 2)
+  );
+  --input-field-half-width: calc(
+    calc(var(--input-card-max-width) * 0.5) - calc(var(--input-card-margin) * 2)
+  );
+  --title-font-size: 22px;
+  user-select: none;
+  font-family: Jost-Reg, Arial, Helvetica, sans-serif;
 }
 
 body {
-    background-color: rgb(192, 214, 255);
-    display: grid;
-    grid-template-columns: 1fr max(280px, min(600px, 100%)) 1fr;
-    grid-template-rows: 100%;
-    justify-content: center;
-    align-content: start;
+  background-color: rgb(192, 214, 255);
+  display: grid;
+  grid-template-columns: 1fr max(280px, min(600px, 100%)) 1fr;
+  grid-template-rows: 100%;
+  justify-content: center;
+  align-content: start;
 }
 
 .bg-img {
-    fill: var(--card-bg-hover-col);
-    width: 12px;
+  fill: var(--card-bg-hover-col);
+  width: 12px;
 }
 
 button {
-    font-family: Jost-Reg, Arial, Helvetica, sans-serif;
-    font-size: small;
-    background-color: rgba(0, 0, 0, 0);
-    border-style: none;
-    padding: 0px
+  font-family: Jost-Reg, Arial, Helvetica, sans-serif;
+  font-size: small;
+  background-color: rgba(0, 0, 0, 0);
+  border-style: none;
+  padding: 0px;
 }
 
 .task-bin:not(.freeze) button:active > svg,
 button.input-button:active > svg {
-    fill: var(--card-select-col);
+  fill: var(--card-select-col);
 }
 
 .instructions {
-    color: var(--card-header-col);
-    margin: 15vh 2vh 0px 2vh;
-    text-align: center;
-    font-size: 4vh;
+  color: var(--card-header-col);
+  margin: 15vh 2vh 0px 2vh;
+  text-align: center;
+  font-size: 4vh;
 }
-
-
 
 /* INPUT CARD ELEMENTS */
 
 .card-input {
-    background-color: var(--card-bg-col);
-    grid-area: 1 / 2 / 2 / 3;
-    border-radius: 10px;
-    display: grid;
-    grid-template-columns: 1fr;
-    grid-auto-rows: min-content;
-    align-content: space-evenly;
-    min-width: 264px;
-    max-width: var(--input-card-max-width);
-    height: min-content;
-    filter: var(--shadow-s);
-    justify-self: center;
-    position: fixed;
-    top: 10vh;
-    z-index: 12;
+  background-color: var(--card-bg-col);
+  grid-area: 1 / 2 / 2 / 3;
+  border-radius: 10px;
+  display: grid;
+  grid-template-columns: 1fr;
+  grid-auto-rows: min-content;
+  align-content: space-evenly;
+  min-width: 264px;
+  max-width: var(--input-card-max-width);
+  height: min-content;
+  filter: var(--shadow-s);
+  justify-self: center;
+  position: fixed;
+  top: 10vh;
+  z-index: 12;
 }
 
-input, textarea {
-    font-family: Spline-Sans-Mono-Reg, Arial, Helvetica, sans-serif;
-    max-width: var(--input-field-width);
+input,
+textarea {
+  font-family: Spline-Sans-Mono-Reg, Arial, Helvetica, sans-serif;
+  max-width: var(--input-field-width);
 }
 
-input, textarea, fieldset {
-    border-style: none;
-    background-color: var(--field-col);
-    padding: 10px;
-    filter: var(--shadow-s);
-    outline-color: var(--card-select-col);
+input,
+textarea,
+fieldset {
+  border-style: none;
+  background-color: var(--field-col);
+  padding: 10px;
+  filter: var(--shadow-s);
+  outline-color: var(--card-select-col);
 }
 
-input:hover, textarea:hover, fieldset:hover:not([disabled]),
-input:focus, textarea:focus, fieldset:focus {
-    background-color: var(--card-bg-hover-col);
+input:hover,
+textarea:hover,
+fieldset:hover:not([disabled]),
+input:focus,
+textarea:focus,
+fieldset:focus {
+  background-color: var(--card-bg-hover-col);
 }
 
 textarea {
-    resize: vertical;
-    min-height: 60px;;
+  resize: vertical;
+  min-height: 60px;
 }
 
 fieldset {
-    background-color: var(--field-col);
-    font-size: smaller;
-    display: grid;
-    column-gap: 8px;
-    row-gap: 4px;
-    margin-bottom: 8px;
-    grid-template-columns: auto auto;
-    grid-template-rows: 1fr 1fr 1fr;
-    align-items: center;
-    height: min-content;
-    max-width: var(--input-field-half-width);
+  background-color: var(--field-col);
+  font-size: smaller;
+  display: grid;
+  column-gap: 8px;
+  row-gap: 4px;
+  margin-bottom: 8px;
+  grid-template-columns: auto auto;
+  grid-template-rows: 1fr 1fr 1fr;
+  align-items: center;
+  height: min-content;
+  max-width: var(--input-field-half-width);
 }
 
 input[type="radio"] {
-    justify-self: end;
+  justify-self: end;
 }
 
 input[type="date"],
 input[type="time"] {
-    max-width: var(--input-field-half-width);
-    /* Makes time/date fields display correctly on Chrome mobile. */
-    box-sizing: border-box;
+  max-width: var(--input-field-half-width);
+  /* Makes time/date fields display correctly on Chrome mobile. */
+  box-sizing: border-box;
 }
 
 input[type="checkbox"] {
-    margin-top: 2px;
+  margin-top: 2px;
 }
 
 .field-container {
-    margin-top: 8px;
-    margin-left: 8px;
-    margin-right: 8px;
-    display: grid;
-    grid-template-columns: 1fr;
-    grid-template-rows: min-content;
-    grid-auto-flow: row;
-    grid-auto-rows: auto;
-    max-width: var(--input-field-width);
+  margin-top: 8px;
+  margin-left: 8px;
+  margin-right: 8px;
+  display: grid;
+  grid-template-columns: 1fr;
+  grid-template-rows: min-content;
+  grid-auto-flow: row;
+  grid-auto-rows: auto;
+  max-width: var(--input-field-width);
 }
 
 .input-container > .field-container {
-    max-width: var(--input-field-half-width);
+  max-width: var(--input-field-half-width);
 }
 
 .input-container {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    max-width: var(--input-card-max-width);
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  max-width: var(--input-card-max-width);
 }
 
 .due-container {
-    grid-template-rows: min-content 1fr;
+  grid-template-rows: min-content 1fr;
 }
 
 .radio-container {
-    grid-template-rows: min-content 1fr min-content;
+  grid-template-rows: min-content 1fr min-content;
 }
 
 .progress-check-container {
-    display: grid;
-    column-gap: 8px;
-    grid-template-columns: auto 1fr;
-    align-items: start;
-    font-size: smaller;
-    padding-left: 4px;
+  display: grid;
+  column-gap: 8px;
+  grid-template-columns: auto 1fr;
+  align-items: start;
+  font-size: smaller;
+  padding-left: 4px;
 }
 
 .field-container > label,
 .field-container > .pseudo-label {
-    height: min-content;
-    top: 1px;
-    z-index: 1;
-    margin-left: 10px;
+  height: min-content;
+  top: 1px;
+  z-index: 1;
+  margin-left: 10px;
 }
 
 .input-buttons {
-    margin: 8px;
-    display: grid;
-    grid-auto-flow: column;
-    grid-auto-columns: min-content;
-    justify-content: end;
+  margin: 8px;
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: min-content;
+  justify-content: end;
 }
 
-.confirm-button, .cancel-button {
-    width: 32px;
-    height: 32px;
+.confirm-button,
+.cancel-button {
+  width: 32px;
+  height: 32px;
 }
 
 .input-button-img {
-    fill: var(--card-header-col);
-    width: 32px;
-    height: 32px;
-    filter: var(--shadow-s);
+  fill: var(--card-header-col);
+  width: 32px;
+  height: 32px;
+  filter: var(--shadow-s);
 }
-
-
 
 /* TASK CARD ELEMENTS */
 
 .task-bin {
-    grid-area: 1 / 2 / 2 / 3;
-    margin-bottom: 14px;
+  grid-area: 1 / 2 / 2 / 3;
+  margin-bottom: 14px;
 }
 
-.card-editable:not(.card-title), fieldset > label {
-    font-family: Assistant-Reg, Arial, Helvetica, sans-serif;
+.card-editable:not(.card-title),
+fieldset > label {
+  font-family: Assistant-Reg, Arial, Helvetica, sans-serif;
 }
 
 .task {
-    background-color: var(--card-bg-col);
-    border-radius: 10px;
-    max-width: 400px;
-    padding-bottom: 10px;
-    margin: 14px calc(var(--card-margin) * 0.75) 0px 0px;
-    margin-left: 14px;
-    filter: var(--shadow-l);
-    position: relative;
-    z-index: 0;
+  background-color: var(--card-bg-col);
+  border-radius: 10px;
+  max-width: 400px;
+  padding-bottom: 10px;
+  margin: 14px calc(var(--card-margin) * 0.75) 0px 0px;
+  margin-left: 14px;
+  filter: var(--shadow-l);
+  position: relative;
+  z-index: 0;
 }
 
 .task.collapsed {
-    padding-bottom: 0px;
+  padding-bottom: 0px;
 }
 
 .input-button:hover:not(:active) > svg,
 .task-bin:not(.freeze) button:hover:not(:active) > svg {
-    fill: var(--card-header-hover-col);
+  fill: var(--card-header-hover-col);
 }
 
 .task-bin:not(.freeze) .subtasks-button:hover > .subtasks-text {
-    background-color: var(--card-bg-hover-col);
+  background-color: var(--card-bg-hover-col);
 }
 
 .task-bin:not(.freeze) .subtasks-button:active > .subtasks-text {
-    background-color: var(--card-select-col);
+  background-color: var(--card-select-col);
 }
 
-.task-bin:not(.freeze) .card-header-div.hover-possible:hover > .edit-task-button {
-    display: grid;
-    filter: var(--shadow-l);
+.task-bin:not(.freeze)
+  .card-header-div.hover-possible:hover
+  > .edit-task-button {
+  display: grid;
+  filter: var(--shadow-l);
 }
 
 .task-bin:not(.freeze) .edit-task-img:hover:not(:active) > svg {
-    fill: var(--card-header-hover-col);
+  fill: var(--card-header-hover-col);
 }
 
 .card-label,
 .field-container > label,
 .field-container > .pseudo-label {
-    position: relative;
-    background-color: var(--field-col);
-    filter: var(--shadow-s);
-    border-radius: 3px;
-    font-size: smaller;
-    width: fit-content;
-    padding: 0px 2px 0px 2px;
+  position: relative;
+  background-color: var(--field-col);
+  filter: var(--shadow-s);
+  border-radius: 3px;
+  font-size: smaller;
+  width: fit-content;
+  padding: 0px 2px 0px 2px;
 }
 
 .card-label {
-    height: fit-content;
-    top: -24px;
-    grid-area: 1 / 1 / 2 / 2;
+  height: fit-content;
+  top: -24px;
+  grid-area: 1 / 1 / 2 / 2;
 }
 
 .card-container {
-    background-color: var(--field-col);
-    margin: 20px 10px 0px 10px;
-    padding: 10px;
-    display: grid;
-    grid-template-rows: 0px auto;
-    filter: var(--shadow-s);
+  background-color: var(--field-col);
+  margin: 20px 10px 0px 10px;
+  padding: 10px;
+  display: grid;
+  grid-template-rows: 0px auto;
+  filter: var(--shadow-s);
 }
 
 .info-container > .card-container {
-    flex-grow: 1;
+  flex-grow: 1;
 }
 
 .info-container {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: start;
-    position: relative;
-    z-index: 0;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: start;
+  position: relative;
+  z-index: 0;
 }
-
 
 /* TITLE BAR ELEMENTS */
 
 .card-title-div {
-    background-color: var(--card-header-col);
+  background-color: var(--card-header-col);
 }
 
 .card-title-container {
-    grid-area: 1 / 1 / 2 / 2;
-    display: grid;
-    grid-template-columns: min-content min-content auto;
-    align-items: center;
+  grid-area: 1 / 1 / 2 / 2;
+  display: grid;
+  grid-template-columns: min-content min-content auto;
+  align-items: center;
 }
 
 .card-title {
-    grid-area: 1 / 3 / 2 / 4;
-    filter: var(--shadow-s);
-    font-size: var(--title-font-size);
+  grid-area: 1 / 3 / 2 / 4;
+  filter: var(--shadow-s);
+  font-size: var(--title-font-size);
 }
 
 .card-title,
 .card-due-date,
 .card-due-time {
-    color: var(--card-bg-hover-col);
+  color: var(--card-bg-hover-col);
 }
 
 .card-header-div {
-    display: grid;
-    grid-template-columns: 1fr;
-    grid-template-rows: minmax(32px, auto) auto auto 4px;
-    justify-content: space-between;
-    justify-items: start;
-    align-items: center;
-    position: relative;
-    z-index: 1;
-    background-color: var(--card-header-col);
-    border-radius: 10px 10px 10px 10px;
-    border-style: solid;
-    border-color: rgba(0, 0, 0, 0);
-    border-width: 4px;
-    padding: 4px 4px 0px 4px;
-    filter: var(--shadow-s);
+  display: grid;
+  grid-template-columns: 1fr;
+  grid-template-rows: minmax(32px, auto) auto auto 4px;
+  justify-content: space-between;
+  justify-items: start;
+  align-items: center;
+  position: relative;
+  z-index: 1;
+  background-color: var(--card-header-col);
+  border-radius: 10px 10px 10px 10px;
+  border-style: solid;
+  border-color: rgba(0, 0, 0, 0);
+  border-width: 4px;
+  padding: 4px 4px 0px 4px;
+  filter: var(--shadow-s);
 }
 
 .card-due-date {
-    grid-area: 2 / 1 / 3 / 2;
+  grid-area: 2 / 1 / 3 / 2;
 }
 
 .card-due-time {
-    grid-area: 3 / 1 / 4 / 2;
+  grid-area: 3 / 1 / 4 / 2;
 }
 
-.task.selected > .card-header-div  {
-    border-color: var(--card-select-col);
+.task.selected > .card-header-div {
+  border-color: var(--card-select-col);
 }
 
 .task-bin:not(.freeze) .card-header-div.hover-possible:hover,
 .task.editing > .card-header-div {
-    background-color: var(--card-header-hover-col);
+  background-color: var(--card-header-hover-col);
 }
 
 .task.collapsed .card-container,
 .subtasks.collapsed > div:not(.subtasks-button) {
-    display: none;
+  display: none;
 }
 
 .progress-completed + .card-title {
-    text-decoration-line: line-through;
+  text-decoration-line: line-through;
 }
 
 .edit-task-button {
-    display: none;
-    width: 32px;
-    height: 32px;
-    grid-area: 1 / 1 / 2 / 2;
-    justify-self: end;
-    align-self: center;
-    align-content: center;
-    justify-content: center;
+  display: none;
+  width: 32px;
+  height: 32px;
+  grid-area: 1 / 1 / 2 / 2;
+  justify-self: end;
+  align-self: center;
+  align-content: center;
+  justify-content: center;
 }
 
 .edit-task-img {
-    width: 32px;
-    height: 32px;
-    fill: var(--card-header-col);
+  width: 32px;
+  height: 32px;
+  fill: var(--card-header-col);
 }
 
-.priority-img, .progress-img {
-    fill: var(--card-bg-hover-col);
-    width: var(--title-font-size);
-    height: var(--title-font-size);
-    filter: var(--shadow-s);
+.priority-img,
+.progress-img {
+  fill: var(--card-bg-hover-col);
+  width: var(--title-font-size);
+  height: var(--title-font-size);
+  filter: var(--shadow-s);
 }
 
 .progress-img {
-    fill: var(--card-bg-hover-col);
+  fill: var(--card-bg-hover-col);
 }
 
 .priority-low {
-    fill: rgb(0, 202, 0);
+  fill: rgb(0, 202, 0);
 }
 
 .priority-mid {
-    fill: orange;
+  fill: orange;
 }
 
 .priority-high {
-    fill: red;
+  fill: red;
 }
 
 .task-expand-button {
-    width: 32px;
-    height: 32px;
-    justify-self: center;
-    grid-area: 4 / 1 / 5 / 2;
-    justify-content: center;
-    align-content: center;
+  width: 32px;
+  height: 32px;
+  justify-self: center;
+  grid-area: 4 / 1 / 5 / 2;
+  justify-content: center;
+  align-content: center;
 }
 
 .task-expand-img {
-    width: 32px;
-    height: 32px;
-    fill: var(--card-header-col);
-    filter: var(--shadow-x-only);
+  width: 32px;
+  height: 32px;
+  fill: var(--card-header-col);
+  filter: var(--shadow-x-only);
 }
-
 
 /* SUBTASK ELEMNTS */
 
 .subtasks-button {
-    margin: 4px 0px 4px 0px;
-    width: fit-content;
-    display: grid;
-    column-gap: 4px;
-    grid-template-columns: min-content auto;
-    align-items: center;
+  margin: 4px 0px 4px 0px;
+  width: fit-content;
+  display: grid;
+  column-gap: 4px;
+  grid-template-columns: min-content auto;
+  align-items: center;
 }
 
 .subtasks-plus-img {
-    fill: var(--card-header-col);
-    height: 28px;
-    width: 28px;
-    filter: var(--shadow-l);
+  fill: var(--card-header-col);
+  height: 28px;
+  width: 28px;
+  filter: var(--shadow-l);
 }
 
 .subtasks-text {
-    background-color: var(--card-bg-col);
-    border-radius: 0px 10px 10px 0px;
-    width: fit-content;
-    padding: 0px 6px 0px 12px;
-    filter: var(--shadow-l);
-    position: relative;
-    left: -12px;
-    z-index: -1;
+  background-color: var(--card-bg-col);
+  border-radius: 0px 10px 10px 0px;
+  width: fit-content;
+  padding: 0px 6px 0px 12px;
+  filter: var(--shadow-l);
+  position: relative;
+  left: -12px;
+  z-index: -1;
 }
-
-
 
 /* MENU ELEMENTS */
 
 .menu {
-    overflow: hidden;
-    font-size: 20px;
-    filter: var(--shadow-l);
-    z-index: 11;
+  overflow: hidden;
+  font-size: 20px;
+  filter: var(--shadow-l);
+  z-index: 11;
 }
 
 .menu.touch-menu {
-    font-size: 26px;
+  font-size: 26px;
 }
 
 .menu-rect {
-    fill: var(--card-bg-col);
+  fill: var(--card-bg-col);
 }
 
 .menu-border {
-    fill: var(--card-header-col);
+  fill: var(--card-header-col);
 }
 
 .menu-text {
-    fill: black;
+  fill: black;
 }
 
 .menu-highlight {
-    fill: var(--card-bg-hover-col);
+  fill: var(--card-bg-hover-col);
 }
-
-
 
 /* CLEAR DATA ELEMENTS */
 
 .clear-data {
-    position: fixed;
-    bottom: 0px;
-    right: max(0px, calc(calc(100vw * 0.5) - 300px));
-    z-index: 10;
-    background-color: var(--card-bg-col);
-    border-radius: 10px 10px 0px 0px;
-    width: fit-content;
-    padding: 0px 6px 0px 6px;
-    filter: var(--shadow-l);
+  position: fixed;
+  bottom: 0px;
+  right: max(0px, calc(calc(100vw * 0.5) - 300px));
+  z-index: 10;
+  background-color: var(--card-bg-col);
+  border-radius: 10px 10px 0px 0px;
+  width: fit-content;
+  padding: 0px 6px 0px 6px;
+  filter: var(--shadow-l);
 }
 
 .task-bin:not(.freeze) + .clear-data:hover {
-    background-color: var(--card-bg-hover-col);
+  background-color: var(--card-bg-hover-col);
 }
 
 .task-bin:not(.freeze) + .clear-data:active {
-    background-color: var(--card-select-col);
+  background-color: var(--card-select-col);
 }
-
-
 
 /* OVERRIDES OTHER PROPERTIES -- SHOULD ALWAYS COME LAST */
 
 .hidden {
-    display: none;
+  display: none;
 }
