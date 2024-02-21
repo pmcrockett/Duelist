@@ -1,4 +1,4 @@
-import dateFormat, { masks } from "dateformat";
+import dateFormat from "dateformat";
 
 const taskBin = document.querySelector(".task-bin");
 const priorityList = ["N/A", "Unimportant", "Important", "Urgent"];
@@ -6,7 +6,7 @@ const progressList = ["N/A", "Not started", "In progress", "Complete"];
 
 export function createCard(_task) {
   let supertaskDiv = null;
-  let supertask = _task.supertask;
+  const supertask = _task.supertask;
   let neighborIdx = -1;
 
   if (_task.supertaskList) {
@@ -27,8 +27,8 @@ export function createCard(_task) {
     supertaskDiv = taskBin;
   }
 
-  let indentStr = `margin-left: calc(calc(var(--card-indent) * ${_task.depth}) + calc(var(--card-margin) * 0.5))`;
-  let card = document.createElement("div");
+  const indentStr = `margin-left: calc(calc(var(--card-indent) * ${_task.depth}) + calc(var(--card-margin) * 0.5))`;
+  const card = document.createElement("div");
   card.classList.add("task", `id-${_task.id}`);
   card.setAttribute("style", indentStr);
 
@@ -42,8 +42,8 @@ export function createCard(_task) {
     supertaskDiv.appendChild(card);
   }
 
-  let hDiv = createAppend("div", "card-header-div", card);
-  let titleContainer = createAppend("div", "card-title-container", hDiv);
+  const hDiv = createAppend("div", "card-header-div", card);
+  const titleContainer = createAppend("div", "card-title-container", hDiv);
 
   if (_task.priority) {
     titleContainer.appendChild(createPrioritySvg(_task.priority));
@@ -55,15 +55,19 @@ export function createCard(_task) {
     titleContainer.appendChild(progressSvg);
   }
 
-  let h2 = createAppend(
+  createAppend(
     "h2",
     ["card-title", "card-editable"],
     titleContainer,
     _task.title
   );
-  let editButton = createAppend("button", ["button", "edit-task-button"], hDiv);
+  const editButton = createAppend(
+    "button",
+    ["button", "edit-task-button"],
+    hDiv
+  );
   editButton.setAttribute("tabindex", "0");
-  let editSvg = createAppend(
+  createAppend(
     createSvg(
       "M12,2C6.47,2 2,6.47 2,12C2,17.53 6.47,22 12,22C17.53,22 22,17.53 22,12C22,6.47 17.53,2 12,2M15.1,7.07C15.24,7.07 15.38,7.12 15.5,7.23L16.77,8.5C17,8.72 17,9.07 16.77,9.28L15.77,10.28L13.72,8.23L14.72,7.23C14.82,7.12 14.96,7.07 15.1,7.07M13.13,8.81L15.19,10.87L9.13,16.93H7.07V14.87L13.13,8.81Z",
       "Edit task",
@@ -74,7 +78,7 @@ export function createCard(_task) {
   );
 
   if (_task.dueDate) {
-    let dueDate = createAppend(
+    createAppend(
       "div",
       ["card-due-date", "card-editable"],
       hDiv,
@@ -83,7 +87,7 @@ export function createCard(_task) {
   }
 
   if (_task.dueTime) {
-    let dueDate = createAppend(
+    createAppend(
       "div",
       ["card-due-time", "card-editable"],
       hDiv,
@@ -91,13 +95,13 @@ export function createCard(_task) {
     );
   }
 
-  let expandButton = createAppend(
+  const expandButton = createAppend(
     "button",
     ["button", "task-expand-button"],
     hDiv
   );
   expandButton.setAttribute("tabindex", "0");
-  let taskExpandSvg = createAppend(
+  const taskExpandSvg = createAppend(
     createSvg("", "Expand", true),
     "task-expand-img",
     expandButton
@@ -107,25 +111,20 @@ export function createCard(_task) {
     expandButton.classList.add("hidden");
   }
 
-  let taskExpandPath = taskExpandSvg.querySelector("path:not(.bg-img)");
+  const taskExpandPath = taskExpandSvg.querySelector("path:not(.bg-img)");
   updateTaskExpandView(taskExpandPath, card, _task);
 
   if (_task.priority > 0 || _task.progress > 0) {
-    let infoContainer = createAppend("div", "info-container", card);
+    const infoContainer = createAppend("div", "info-container", card);
 
     if (_task.priority > 0) {
-      let priorityContainer = createAppend(
+      const priorityContainer = createAppend(
         "div",
         "card-container",
         infoContainer
       );
-      let priorityLabel = createAppend(
-        "div",
-        "card-label",
-        priorityContainer,
-        "Priority"
-      );
-      let priority = createAppend(
+      createAppend("div", "card-label", priorityContainer, "Priority");
+      createAppend(
         "div",
         ["card-priority", "card-editable"],
         priorityContainer,
@@ -134,18 +133,13 @@ export function createCard(_task) {
     }
 
     if (_task.progress > 0 || _task.useProgressFromSubtasks) {
-      let progressContainer = createAppend(
+      const progressContainer = createAppend(
         "div",
         "card-container",
         infoContainer
       );
-      let progressLabel = createAppend(
-        "div",
-        "card-label",
-        progressContainer,
-        "Progress"
-      );
-      let prog = createAppend(
+      createAppend("div", "card-label", progressContainer, "Progress");
+      const prog = createAppend(
         "div",
         ["card-progress", "card-editable"],
         progressContainer,
@@ -159,25 +153,27 @@ export function createCard(_task) {
   }
 
   if (_task.description.length) {
-    let descContainer = createAppend("div", "card-container", card);
-    let desc = createAppend(
+    const descContainer = createAppend("div", "card-container", card);
+    createAppend(
       "div",
       ["card-description", "card-content", "card-editable"],
       descContainer,
       _task.description
     );
-    let descLabel = createAppend("div", "card-label", descContainer, "About");
+    createAppend("div", "card-label", descContainer, "About");
   }
 
+  let subtasksButton;
+
   if (_task.notes.length) {
-    let notesContainer = createAppend("div", "card-container", card);
-    let notes = createAppend(
+    const notesContainer = createAppend("div", "card-container", card);
+    createAppend(
       "div",
       ["card-notes", "card-content", "card-editable"],
       notesContainer,
       _task.notes
     );
-    let notesLabel = createAppend("div", "card-label", notesContainer, "Notes");
+    createAppend("div", "card-label", notesContainer, "Notes");
   }
 
   let subtasks = taskBin.querySelector(`.subtasks.id-${_task.id}`);
@@ -189,7 +185,7 @@ export function createCard(_task) {
     card.insertAdjacentElement("afterend", subtasks);
     subtasks.classList.add("subtasks", `id-${_task.id}`);
 
-    var subtasksButton = createAppend(
+    subtasksButton = createAppend(
       "button",
       ["subtasks-button", "button", `id-${_task.id}`],
       subtasks
@@ -202,16 +198,15 @@ export function createCard(_task) {
       subtasksButton.classList.remove("hidden");
     }
 
-    let subtasksPlusSvg = createAppend(
+    createAppend(
       createSvg("", "Subtasks", true),
       "subtasks-plus-img",
       subtasksButton
     );
 
-    let subtasksPlusPath = subtasksPlusSvg.querySelector("path:not(.bg-img)");
     setSubtaskExpandView(_task.subtaskList.expanded, subtasks, _task, false);
 
-    let subtasksText = createAppend(
+    createAppend(
       "div",
       ["subtasks-text", `id-${_task.id}`],
       subtasksButton,
@@ -222,7 +217,7 @@ export function createCard(_task) {
   } else {
     subtasks.remove();
     card.insertAdjacentElement("afterend", subtasks);
-    var subtasksButton = subtasks.querySelector(".subtasks-button");
+    subtasksButton = subtasks.querySelector(".subtasks-button");
 
     if (!_task.subtasks.length) {
       subtasksButton.classList.add("hidden");
@@ -230,7 +225,7 @@ export function createCard(_task) {
       subtasksButton.classList.remove("hidden");
     }
 
-    let subtasksText = subtasks.querySelector(".subtasks-text");
+    const subtasksText = subtasks.querySelector(".subtasks-text");
     subtasksText.textContent = `${_task.subtasks.length} 
             ${_task.subtasks.length == 1 ? "subtask" : "subtasks"}`;
   }
@@ -249,12 +244,12 @@ export function createCard(_task) {
 }
 
 export function showInstructions() {
-  let inst = taskBin.querySelector(".instructions");
+  const inst = taskBin.querySelector(".instructions");
   inst.classList.remove("hidden");
 }
 
 export function hideInstructions() {
-  let inst = taskBin.querySelector(".instructions");
+  const inst = taskBin.querySelector(".instructions");
   inst.classList.add("hidden");
 }
 
@@ -275,7 +270,7 @@ export function updateTaskExpandView(_svgPath, _card, _task) {
 }
 
 export function setSubtaskExpandView(_expanded, _card, _task, _recursive) {
-  let subtasksPlusPath = _card.querySelector(
+  const subtasksPlusPath = _card.querySelector(
     ".subtasks-plus-img > path:not(.bg-img)"
   );
   _task.subtaskList.expanded = _expanded;
@@ -294,8 +289,8 @@ export function setSubtaskExpandView(_expanded, _card, _task, _recursive) {
   }
 
   if (_recursive) {
-    for (let task of _task.subtaskList.tasks) {
-      let subcard = _card.querySelector(`.subtasks.id-${task.id}`);
+    for (const task of _task.subtaskList.tasks) {
+      const subcard = _card.querySelector(`.subtasks.id-${task.id}`);
       setSubtaskExpandView(_expanded, subcard, task, _recursive);
     }
   }
@@ -303,22 +298,22 @@ export function setSubtaskExpandView(_expanded, _card, _task, _recursive) {
 
 export function freeze() {
   taskBin.classList.add("freeze");
-  let focusable = document.querySelectorAll('[tabindex="0"]:not(body)');
-  for (let elem of focusable) {
+  const focusable = document.querySelectorAll('[tabindex="0"]:not(body)');
+  for (const elem of focusable) {
     elem.setAttribute("tabindex", "-1");
   }
 }
 
 export function thaw() {
   taskBin.classList.remove("freeze");
-  let focusable = document.querySelectorAll('[tabindex="-1"]:not(body)');
-  for (let elem of focusable) {
+  const focusable = document.querySelectorAll('[tabindex="-1"]:not(body)');
+  for (const elem of focusable) {
     elem.setAttribute("tabindex", "0");
   }
 }
 
 export function select(_taskId) {
-  let card = taskBin.querySelector(`.task.id-${_taskId}`);
+  const card = taskBin.querySelector(`.task.id-${_taskId}`);
 
   if (card) {
     card.classList.add("selected");
@@ -326,7 +321,7 @@ export function select(_taskId) {
 }
 
 export function unselect(_taskId) {
-  let card = taskBin.querySelector(`.task.id-${_taskId}`);
+  const card = taskBin.querySelector(`.task.id-${_taskId}`);
 
   if (card) {
     card.classList.remove("selected");
@@ -334,14 +329,14 @@ export function unselect(_taskId) {
 }
 
 export function getTaskIdAtPos(_clientX, _clientY) {
-  let underMouse = document.elementsFromPoint(_clientX, _clientY);
+  const underMouse = document.elementsFromPoint(_clientX, _clientY);
   let taskFound = false;
   let id = -1;
 
-  for (let _elem of underMouse) {
+  for (const _elem of underMouse) {
     // Disregard positions that also intersect the expand button.
     if (_elem.classList.contains("task")) {
-      let idPos = _elem.className.indexOf("id-");
+      const idPos = _elem.className.indexOf("id-");
       let idEnd = _elem.className.indexOf(" ", idPos);
       if (idEnd < 0) idEnd = _elem.className.length;
       taskFound = true;
@@ -359,12 +354,12 @@ export function getTaskIdAtPos(_clientX, _clientY) {
 
 export function createInputBox(_task) {
   freeze();
-  let body = document.querySelector("body");
-  let card = body.querySelector(`.task.id-${_task.id}`);
+  const body = document.querySelector("body");
+  const card = body.querySelector(`.task.id-${_task.id}`);
   card.classList.add("editing");
-  let cardInput = createAppend("div", "card-input", body);
+  const cardInput = createAppend("div", "card-input", body);
 
-  let titleInput = createInput(
+  const titleInput = createInput(
     "text",
     null,
     "input-title",
@@ -383,12 +378,12 @@ export function createInputBox(_task) {
     );
   }, 1);
 
-  let dueContainer = createAppend(
+  const dueContainer = createAppend(
     "div",
     ["due-container", "input-container"],
     cardInput
   );
-  let dateInput = createInput(
+  const dateInput = createInput(
     "date",
     null,
     "input-date",
@@ -397,7 +392,7 @@ export function createInputBox(_task) {
     "field-container",
     "Due date"
   );
-  let timeInput = createInput(
+  const timeInput = createInput(
     "time",
     null,
     "input-time",
@@ -407,7 +402,7 @@ export function createInputBox(_task) {
     "Due time"
   );
 
-  let descInput = createInput(
+  const descInput = createInput(
     "textarea",
     null,
     "input-desc",
@@ -417,60 +412,50 @@ export function createInputBox(_task) {
     "Description"
   );
 
-  let radioContainer = createAppend(
+  const radioContainer = createAppend(
     "div",
     ["radio-container", "input-container"],
     cardInput
   );
 
-  let priorityFieldContainer = createAppend(
+  const priorityFieldContainer = createAppend(
     "div",
     "field-container",
     radioContainer
   );
-  let priorityLabel = createAppend(
-    "div",
-    "pseudo-label",
-    priorityFieldContainer,
-    "Priority"
-  );
-  let priorityField = createAppend(
+  createAppend("div", "pseudo-label", priorityFieldContainer, "Priority");
+  const priorityField = createAppend(
     createRadioField("priority-radio", _task.priority, priorityList),
     null,
     priorityFieldContainer
   );
   setInputAttributes(priorityField, null, "input-priority");
 
-  let progressFieldContainer = createAppend(
+  const progressFieldContainer = createAppend(
     "div",
     "field-container",
     radioContainer
   );
-  let progressLabel = createAppend(
-    "div",
-    "pseudo-label",
-    progressFieldContainer,
-    "Progress"
-  );
-  let progressField = createAppend(
+  createAppend("div", "pseudo-label", progressFieldContainer, "Progress");
+  const progressField = createAppend(
     createRadioField("progress-radio", _task.progress, progressList),
     null,
     progressFieldContainer
   );
   setInputAttributes(progressField, null, "input-progress");
-  let progressCheckContainer = createAppend(
+  const progressCheckContainer = createAppend(
     "div",
     "progress-check-container",
     progressFieldContainer
   );
-  let progressCheck = createAppend("input", null, progressCheckContainer);
+  const progressCheck = createAppend("input", null, progressCheckContainer);
   setInputAttributes(progressCheck, "checkbox", "progress-check");
 
   if (_task.useProgressFromSubtasks) {
     progressCheck.setAttribute("checked", "checked");
   }
 
-  let progressCheckLabel = createAppend(
+  const progressCheckLabel = createAppend(
     "label",
     null,
     progressCheckContainer,
@@ -479,7 +464,7 @@ export function createInputBox(_task) {
   progressCheckLabel.setAttribute("for", "progress-check");
   updateProgressField(progressCheck, progressField);
 
-  let notesInput = createInput(
+  const notesInput = createInput(
     "textarea",
     null,
     "input-note",
@@ -489,14 +474,14 @@ export function createInputBox(_task) {
     "Notes"
   );
 
-  let buttonDiv = createAppend("div", "input-buttons", cardInput);
-  let confirmButton = createAppend(
+  const buttonDiv = createAppend("div", "input-buttons", cardInput);
+  const confirmButton = createAppend(
     "button",
     ["button", "confirm-button", "input-button"],
     buttonDiv
   );
   confirmButton.setAttribute("tabindex", "0");
-  let confirmSvg = createAppend(
+  createAppend(
     createSvg(
       "M12 2C6.5 2 2 6.5 2 12S6.5 22 12 22 22 17.5 22 12 17.5 2 12 2M10 17L5 12L6.41 10.59L10 14.17L17.59 6.58L19 8L10 17Z",
       "Confirm",
@@ -505,13 +490,13 @@ export function createInputBox(_task) {
     "input-button-img",
     confirmButton
   );
-  let cancelButton = createAppend(
+  const cancelButton = createAppend(
     "button",
     ["button", "cancel-button", "input-button"],
     buttonDiv
   );
   cancelButton.setAttribute("tabindex", "0");
-  let cancelSvg = createAppend(
+  createAppend(
     createSvg(
       "M9,7L11,12L9,17H11L12,14.5L13,17H15L13,12L15,7H13L12,9.5L11,7H9M12,2A10,10 0 0,1 22,12A10,10 0 0,1 12,22A10,10 0 0,1 2,12A10,10 0 0,1 12,2Z",
       "Cancel",
@@ -573,7 +558,7 @@ export function updateProgressField(_check, _field) {
 }
 
 export function getRadioValue(_fieldset) {
-  let radios = _fieldset.querySelectorAll("input");
+  const radios = _fieldset.querySelectorAll("input");
 
   for (let i = 0; i < radios.length; i++) {
     if (radios[i].checked) {
@@ -594,15 +579,16 @@ function createInput(
   _labelText,
   _labelClasses
 ) {
-  let container = createAppend("div", _containerClasses, _containerParent);
-  let elemLabel = createAppend("label", _labelClasses, container, _labelText);
+  const container = createAppend("div", _containerClasses, _containerParent);
+  const elemLabel = createAppend("label", _labelClasses, container, _labelText);
   elemLabel.setAttribute("for", _name);
+  let elem;
 
   if (_type == "textarea") {
-    var elem = createAppend("textarea", _classes, container, _value);
+    elem = createAppend("textarea", _classes, container, _value);
     setInputAttributes(elem, null, _name, null);
   } else {
-    var elem = createAppend("input", _classes, container);
+    elem = createAppend("input", _classes, container);
     setInputAttributes(elem, _type, _name, _value);
   }
 
@@ -633,11 +619,11 @@ function expandCard(_task, _div) {
 }
 
 function createRadioField(_name, _defaultValue, _labelArr) {
-  let field = document.createElement("fieldset");
+  const field = document.createElement("fieldset");
   field.classList.add(`${_name}-fieldset`);
 
-  let radios = [];
-  let labels = [];
+  const radios = [];
+  const labels = [];
 
   for (let i = 0; i < _labelArr.length; i++) {
     radios.push(document.createElement("input"));
@@ -659,10 +645,10 @@ function createRadioField(_name, _defaultValue, _labelArr) {
 }
 
 function createSvg(_path, _title, _useBg, _pathClass) {
-  let svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+  const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
   svg.setAttribute("viewBox", "0 0 24 24");
 
-  let title = document.createElementNS("http://www.w3.org/2000/svg", "title");
+  const title = document.createElementNS("http://www.w3.org/2000/svg", "title");
   title.textContent = _title;
   svg.appendChild(title);
   if (_useBg) {
@@ -674,7 +660,7 @@ function createSvg(_path, _title, _useBg, _pathClass) {
     bgPath.classList.add("bg-img");
     svg.appendChild(bgPath);
   }
-  let path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+  const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
   path.setAttribute("d", _path);
   svg.appendChild(path);
 
@@ -698,7 +684,7 @@ function createPrioritySvg(_priority) {
 
   const priorityClass = ["priority-low", "priority-mid", "priority-high"];
 
-  let prioritySvg = createSvg(
+  const prioritySvg = createSvg(
     priorityPath[_priority - 1],
     priorityList[_priority],
     false
@@ -721,7 +707,7 @@ function createProgressSvg(_progress) {
     "progress-completed",
   ];
 
-  let progressSvg = createSvg(
+  const progressSvg = createSvg(
     progressPath[_progress - 1],
     progressList[_progress],
     false

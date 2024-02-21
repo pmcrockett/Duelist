@@ -76,7 +76,7 @@ export default class {
       this.updateHighlight(_e.clientX, _e.clientY);
     });
 
-    window.addEventListener("scroll", (_e) => {
+    window.addEventListener("scroll", () => {
       if (this.isVisible) {
         this.erase();
       }
@@ -87,8 +87,11 @@ export default class {
         this.isVisible &&
         new Date().getTime() - this.initTime > this.postInitDelay
       ) {
-        let menuSelection = this.getHighlighted();
-        let menuMouseOver = document.elementsFromPoint(_e.clientX, _e.clientY);
+        const menuSelection = this.getHighlighted();
+        const menuMouseOver = document.elementsFromPoint(
+          _e.clientX,
+          _e.clientY
+        );
 
         this.svg.remove();
 
@@ -102,15 +105,15 @@ export default class {
   }
 
   init() {
-    let computedFontSize = window
+    const computedFontSize = window
       .getComputedStyle(this.svg)
       .getPropertyValue("font-size");
 
     if (computedFontSize) {
       let num = "";
 
-      for (let char of computedFontSize) {
-        let code = char.charCodeAt(0);
+      for (const char of computedFontSize) {
+        const code = char.charCodeAt(0);
 
         if (code >= 48 && code <= 57) {
           num += char;
@@ -129,8 +132,8 @@ export default class {
 
     let height = 0;
     let width = 0;
-    for (let x of this.menuItems) {
-      let newWidth = x.svgText.text.getBBox().width + x.svgText.xMargin * 2;
+    for (const x of this.menuItems) {
+      const newWidth = x.svgText.text.getBBox().width + x.svgText.xMargin * 2;
 
       if (newWidth > width) {
         width = newWidth;
@@ -219,14 +222,14 @@ export default class {
   }
 
   buttonUp() {
-    if (performance.now() - this.buttonDownTime > clickReleaseWindow)
+    if (performance.now() - this.buttonDownTime > this.clickReleaseWindow)
       this.erase();
   }
 
   erase() {
     this.group.remove();
 
-    for (let item of this.menuItems) {
+    for (const item of this.menuItems) {
       item.group.remove();
     }
 
@@ -246,11 +249,11 @@ export default class {
 
   updateHighlight(_clientX, _clientY) {
     if (this.isVisible) {
-      for (let x of this.menuItems) {
+      for (const x of this.menuItems) {
         x.unhighlight();
       }
-      let menuMouseOver = document.elementsFromPoint(_clientX, _clientY);
-      for (let x of this.menuItems) {
+      const menuMouseOver = document.elementsFromPoint(_clientX, _clientY);
+      for (const x of this.menuItems) {
         if (menuMouseOver.includes(x.rect)) {
           x.highlight();
           break;
@@ -261,7 +264,7 @@ export default class {
 
   getHighlighted() {
     if (this.isVisible) {
-      for (let x of this.menuItems) {
+      for (const x of this.menuItems) {
         if (x.isHighlighted) return x;
       }
     }
@@ -269,14 +272,14 @@ export default class {
   }
 
   getHighlightedText() {
-    let highlighted = this.getHighlighted();
+    const highlighted = this.getHighlighted();
     return highlighted ? highlighted.svgText.text.textContent : undefined;
   }
 
   activateSelection(_selection = "highlighted") {
     if (_selection === "highlighted") _selection = this.getHighlightedText();
 
-    let active = this.menuItems.find((_e) => _e.text == _selection);
+    const active = this.menuItems.find((_e) => _e.text == _selection);
 
     if (active) {
       return active.function();

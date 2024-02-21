@@ -1,22 +1,27 @@
 "use strict";
 
-// Import the ESLint plugin locally
-//const underscorePlugin = require("./eslint-plugin-require-param-underscore");
+import globals from "globals";
 import underscorePlugin from "./eslint-plugin-require-param-underscore.js";
 import eslintConfigPrettier from "eslint-config-prettier";
 
-//module.exports = [
 export default [
+  "eslint:recommended",
   {
-    // files: ["**/*.js"],
     languageOptions: {
+      globals: {
+        ...globals.browser,
+      },
       sourceType: "module",
       ecmaVersion: "latest",
     },
-    // Using the eslint-plugin-example plugin defined locally
     plugins: { underscore: underscorePlugin },
+    ignorePatterns: ["dist/main.js"],
     rules: {
       "underscore/require-param-underscore": "warn",
+      "multiline-comment-style": ["warn", "separate-lines"],
+      "no-lonely-if": "warn",
+      "no-useless-concat": "warn",
+      "prefer-const": ["warn", { destructuring: "all" }],
     },
   },
   eslintConfigPrettier,

@@ -60,7 +60,7 @@ class Task {
     // tasks' IDs are contiguous without having to decrement Task.lastId.
     if (!_isClone) {
       this.assignNewId();
-      this.updateDepth(true);
+      this.updateDepth();
     } else {
       this.id = -1;
     }
@@ -98,20 +98,20 @@ class Task {
   }
 
   updateDue() {
-    let timezone = timezoneString();
+    const timezone = timezoneString();
 
     if (this.dueDateStr && this.dueDateStr.length) {
-      let dateString = `${this.dueDateStr}T00:00:00${timezone}`;
+      const dateString = `${this.dueDateStr}T00:00:00${timezone}`;
       this.dueDate = new Date(dateString);
     }
 
     if (this.dueTimeStr && this.dueTimeStr.length) {
-      let dateString = `2000-01-01T${this.dueTimeStr}:00${timezone}`;
+      const dateString = `2000-01-01T${this.dueTimeStr}:00${timezone}`;
       this.dueTime = new Date(dateString);
     }
   }
 
-  updateDepth(_recursive) {
+  updateDepth() {
     this.depth = 0;
 
     if (this.supertaskList == null) return;
@@ -202,7 +202,7 @@ class Task {
     // Even if not udating recursively, we need to check all supertasks to
     // see if their progress values are changed based on this task's progress
     // and update them accordingly.
-    for (let task of this.chain) {
+    for (const task of this.chain) {
       if (task.useProgressFromSubtasks) {
         task.refreshDom(false);
       }
@@ -237,7 +237,7 @@ class Task {
       }
     }
 
-    for (let task of this.subtaskList.tasks) {
+    for (const task of this.subtaskList.tasks) {
       _progress = task.getProgressRecursive(_progress);
     }
 
@@ -258,7 +258,7 @@ class Task {
   // root task is the last in the array.
   get chain() {
     let supertask = this.supertaskList.owner;
-    let chain = [];
+    const chain = [];
 
     while (supertask) {
       chain.push(supertask);
@@ -302,7 +302,7 @@ class TaskList {
       _idx = this.tasks.length + 1;
     }
 
-    let newTask = new Task();
+    const newTask = new Task();
     this.add(newTask, _idx);
 
     if (this.owner) {
@@ -316,7 +316,7 @@ class TaskList {
     if (_showInput && !stateManager.currentlyEditing) {
       newTask.currentlyEditing = true;
       stateManager.currentlyEditing = true;
-      let inputBox = dom.createInputBox(newTask);
+      const inputBox = dom.createInputBox(newTask);
       listener.addInputCard(newTask, inputBox);
     }
   }
@@ -328,7 +328,7 @@ class TaskList {
 
     this.tasks.splice(_idx, 0, _task);
     _task.supertaskList = this;
-    _task.updateDepth(true);
+    _task.updateDepth();
   }
 
   getTaskIdx(_task) {
@@ -361,7 +361,7 @@ class TaskList {
   getTaskById(_id, _recursive) {
     let idTask = null;
 
-    for (let task of this.tasks) {
+    for (const task of this.tasks) {
       if (task.id == _id) {
         return task;
       } else if (_recursive && task.subtaskList.hasTasks()) {
@@ -382,7 +382,7 @@ class TaskList {
   getIdOrder(_recursive) {
     const order = [];
 
-    for (let task of this.tasks) {
+    for (const task of this.tasks) {
       order.push(task.id);
 
       if (_recursive) {
@@ -420,11 +420,11 @@ class TaskList {
   // Remove all task properties that can't be stringified by JSON. These
   // can be reconstructed on project load even without saving them.
   cloneJson() {
-    let jsonTaskList = new TaskList(null, null);
+    const jsonTaskList = new TaskList(null, null);
     jsonTaskList.expanded = this.expanded;
 
-    for (let task of this.tasks) {
-      let cloned = task.clone(false, null);
+    for (const task of this.tasks) {
+      const cloned = task.clone(false, null);
       jsonTaskList.add(cloned);
       cloned.id = task.id;
       cloned.depth = task.depth;
@@ -446,8 +446,8 @@ class TaskList {
 
     this.clear();
 
-    for (let task of _jsonObj.tasks) {
-      let loadedTask = new Task(
+    for (const task of _jsonObj.tasks) {
+      const loadedTask = new Task(
         task.title,
         task.dueDateStr,
         task.dueTimeStr,
@@ -470,7 +470,7 @@ class TaskList {
         _key = TaskList.DEFAULT_KEY;
       }
 
-      let jsonStr = JSON.stringify(this.cloneJson());
+      const jsonStr = JSON.stringify(this.cloneJson());
       localStorage.setItem(_key, jsonStr);
 
       return true;
@@ -498,11 +498,11 @@ class TaskList {
         _key = TaskList.DEFAULT_KEY;
       }
 
-      let jsonObj = localStorage.getItem(_key);
+      const jsonObj = localStorage.getItem(_key);
 
       if (jsonObj) {
         Task.resetIds();
-        let jsonStr = JSON.parse(jsonObj);
+        const jsonStr = JSON.parse(jsonObj);
         this.initFromJson(jsonStr);
         this.refreshDom(true);
 
@@ -538,23 +538,23 @@ class TaskList {
   }
 }
 
-let stateManager = (function () {
-  let currentlyEditing = false;
-  let selectionAddTo = false;
-  let selectionMass = false;
-  let touch = {
+const stateManager = (function () {
+  const currentlyEditing = false;
+  const selectionAddTo = false;
+  const selectionMass = false;
+  const touch = {
     time: [null, null],
     pos: [null, null],
     touchedId: [null, null],
   };
 
-  let setSelectionAddTo = function (_state, _e) {
+  const setSelectionAddTo = function (_state, _e) {
     if (_e.key == "Control") {
       stateManager.selectionAddTo = _state;
     }
   };
 
-  let setSelectionMass = function (_state, _e) {
+  const setSelectionMass = function (_state, _e) {
     if (_e.key == "Shift") {
       stateManager.selectionMass = _state;
     }
@@ -570,8 +570,8 @@ let stateManager = (function () {
   };
 })();
 
-let logger = (function () {
-  let logTask = function (_task, _prepend) {
+const logger = (function () {
+  const logTask = function (_task, _prepend) {
     if (!_prepend) _prepend = "";
     console.log(_prepend + "----------------");
     console.log(_prepend + "Title: " + _task.title);
@@ -614,10 +614,10 @@ let logger = (function () {
   };
 })();
 
-let copier = (function () {
+const copier = (function () {
   const buffer = [];
 
-  let remove = function (_tasks, _recursive, _refresh) {
+  const remove = function (_tasks, _recursive, _refresh) {
     if (!(_tasks instanceof Array)) {
       _tasks = [_tasks];
     }
@@ -626,12 +626,12 @@ let copier = (function () {
       _tasks = reduceRecursiveInput(_tasks);
     }
 
-    let root = _tasks[0].supertaskList.root;
+    const root = _tasks[0].supertaskList.root;
 
-    for (let task of _tasks) {
+    for (const task of _tasks) {
       let insertIdx = task.supertaskList.getTaskIdx(task);
-      let supertaskList = task.supertaskList;
-      let subtaskList = task.subtaskList;
+      const supertaskList = task.supertaskList;
+      const subtaskList = task.subtaskList;
       task.delete(true);
 
       if (!_recursive) {
@@ -652,7 +652,7 @@ let copier = (function () {
     root.writeToLocalStorage();
   };
 
-  let copy = function (_tasks, _recursive, _globalTaskList) {
+  const copy = function (_tasks, _recursive, _globalTaskList) {
     if (!(_tasks instanceof Array)) {
       _tasks = [_tasks];
     }
@@ -664,17 +664,17 @@ let copier = (function () {
     }
 
     // Ensure that tasks are copied in visual order and not in selection order.
-    let idOrder = _globalTaskList.getIdOrder(true);
+    const idOrder = _globalTaskList.getIdOrder(true);
     _tasks.sort(function (_a, _b) {
-      return idOrder.indexOf(a.id) < idOrder.indexOf(b.id) ? -1 : 1;
+      return idOrder.indexOf(_a.id) < idOrder.indexOf(_b.id) ? -1 : 1;
     });
 
-    for (let task of _tasks) {
+    for (const task of _tasks) {
       buffer.push(task.clone(_recursive));
     }
   };
 
-  let cut = function (_tasks, _recursive, _refresh, _globalTaskList) {
+  const cut = function (_tasks, _recursive, _refresh, _globalTaskList) {
     if (!(_tasks instanceof Array)) {
       _tasks = [_tasks];
     }
@@ -683,7 +683,7 @@ let copier = (function () {
     this.remove(_tasks, _recursive, _refresh);
   };
 
-  let paste = function (_taskList, _idx) {
+  const paste = function (_taskList, _idx) {
     // Allow _taskList to be passed as its owning task for ease of use.
     if (_taskList instanceof Task) {
       _taskList = _taskList.subtaskList;
@@ -692,10 +692,10 @@ let copier = (function () {
     if (!_idx) _idx = _taskList.tasks.length;
 
     if (buffer.length) {
-      for (let bufItem of buffer) {
-        let cloned = bufItem.clone(true, _taskList, _idx++);
+      for (const bufItem of buffer) {
+        const cloned = bufItem.clone(true, _taskList, _idx++);
         cloned.assignNewIdRecursive();
-        cloned.updateDepth(true);
+        cloned.updateDepth();
       }
 
       if (_taskList.owner) {
@@ -712,20 +712,20 @@ let copier = (function () {
     return false;
   };
 
-  let reduceRecursiveInput = function (_tasks) {
+  const reduceRecursiveInput = function (_tasks) {
     const reduced = [];
 
-    for (let task of _tasks) {
+    for (const task of _tasks) {
       // If copying recursively, make sure we're only copying each task
       // once, because thelet user may have explicitly selected subtasks that
       // will also be automatically picked up by the recursion.
-      let chain = task.chain;
+      const chain = task.chain;
       let taskIsSubtask = false;
 
       // If any of the selected tasks is found in this task's super
       // chain, then don't copy this task because it is already included
       // in the recursive copy.
-      for (let possibleSuper of _tasks) {
+      for (const possibleSuper of _tasks) {
         if (chain.includes(possibleSuper)) {
           taskIsSubtask = true;
           break;
@@ -740,7 +740,7 @@ let copier = (function () {
     return reduced;
   };
 
-  let clearBuffer = function () {
+  const clearBuffer = function () {
     buffer.splice(0, buffer.length);
   };
 
@@ -754,10 +754,10 @@ let copier = (function () {
   };
 })();
 
-let selection = (function () {
+const selection = (function () {
   const selected = [];
 
-  let add = function (_task) {
+  const add = function (_task) {
     if (!contains(_task)) {
       _task.selected = true;
       selected.push(_task);
@@ -765,14 +765,14 @@ let selection = (function () {
     }
   };
 
-  let addExclusive = function (_task) {
+  const addExclusive = function (_task) {
     clear();
     _task.selected = true;
     add(_task);
   };
 
-  let remove = function (_task) {
-    let idx = selected.indexOf(_task);
+  const remove = function (_task) {
+    const idx = selected.indexOf(_task);
 
     if (idx >= 0) {
       selected.splice(idx, 1);
@@ -785,8 +785,8 @@ let selection = (function () {
     return false;
   };
 
-  let clear = function () {
-    for (let task of selected) {
+  const clear = function () {
+    for (const task of selected) {
       task.selected = false;
       dom.unselect(task.id);
     }
@@ -794,21 +794,21 @@ let selection = (function () {
     selected.splice(0, selected.length);
   };
 
-  let contains = function (_task) {
+  const contains = function (_task) {
     return selected.indexOf(_task) >= 0;
   };
 
-  let updateSelection = function (_task) {
+  const updateSelection = function (_task) {
     if (stateManager.selectionMass) {
       if (!selection.selected.length) {
         selection.addExclusive(_task);
       } else {
-        let idOrder = taskList.getIdOrder(true);
+        const idOrder = taskList.getIdOrder(true);
         let startIdx = idOrder.indexOf(selection.selected[0].id);
         let endIdx = idOrder.indexOf(_task.id);
 
         if (endIdx < startIdx) {
-          let buffer = startIdx;
+          const buffer = startIdx;
           startIdx = endIdx;
           endIdx = buffer;
         }
@@ -835,8 +835,8 @@ let selection = (function () {
     }
   };
 
-  let triggerMenu = function (_clientX, _clientY, _selectionAddTo, _isTouch) {
-    let task = taskList.getTaskById(
+  const triggerMenu = function (_clientX, _clientY, _selectionAddTo, _isTouch) {
+    const task = taskList.getTaskById(
       dom.getTaskIdAtPos(_clientX, _clientY),
       true
     );
@@ -851,19 +851,21 @@ let selection = (function () {
       classes = ["touch-menu"];
     }
 
+    let menu;
+
     if (task && selection.selected.length) {
-      var menu = buildTaskMenu(task, classes);
+      menu = buildTaskMenu(task, classes);
     } else {
-      var menu = buildBgMenu(classes);
+      menu = buildBgMenu(classes);
     }
 
     document.querySelector("body").appendChild(menu.svg);
     menu.buttonDown(_clientX, _clientY);
   };
 
-  let buildTaskMenu = function (_task, _classes) {
+  const buildTaskMenu = function (_task, _classes) {
     dom.freeze();
-    let menuTexts = [
+    const menuTexts = [
       "New task (above)",
       "New task (below)",
       "New task (as subtask)",
@@ -872,7 +874,7 @@ let selection = (function () {
       "Cut (with subtasks)",
       "Cut (without subtasks)",
     ];
-    let menuFunctions = [
+    const menuFunctions = [
       function () {
         _task.supertaskList.createTask(
           _task.supertaskList.getTaskIdx(_task),
@@ -938,15 +940,15 @@ let selection = (function () {
       }
     );
 
-    let menu = new RightClickMenu(menuTexts, menuFunctions, _classes);
+    const menu = new RightClickMenu(menuTexts, menuFunctions, _classes);
 
     return menu;
   };
 
-  let buildBgMenu = function (_classes) {
+  const buildBgMenu = function (_classes) {
     dom.freeze();
-    let menuTexts = ["New task"];
-    let menuFunctions = [
+    const menuTexts = ["New task"];
+    const menuFunctions = [
       function () {
         if (!taskList.hasTasks()) hideInstructions();
         taskList.createTask(taskList.tasks.length, true);
@@ -961,18 +963,18 @@ let selection = (function () {
       });
     }
 
-    let menu = new RightClickMenu(menuTexts, menuFunctions, _classes);
+    const menu = new RightClickMenu(menuTexts, menuFunctions, _classes);
 
     return menu;
   };
 
-  let showInstructions = function () {
+  const showInstructions = function () {
     if (!taskList.hasTasks()) {
       dom.showInstructions();
     }
   };
 
-  let hideInstructions = function () {
+  const hideInstructions = function () {
     if (!taskList.hasTasks()) {
       dom.hideInstructions();
     }
@@ -990,14 +992,14 @@ let selection = (function () {
   };
 })();
 
-let listener = (function () {
-  let addLeftClick = function () {
+const listener = (function () {
+  const addLeftClick = function () {
     document.addEventListener("click", (_e) => {
-      let task = taskList.getTaskById(
+      const task = taskList.getTaskById(
         dom.getTaskIdAtPos(_e.clientX, _e.clientY),
         true
       );
-      let underMouse = document.elementsFromPoint(_e.clientX, _e.clientY);
+      const underMouse = document.elementsFromPoint(_e.clientX, _e.clientY);
 
       if (!stateManager.currentlyEditing) {
         if (!_e.target.classList.contains("input-button")) {
@@ -1006,7 +1008,7 @@ let listener = (function () {
           } else {
             let needClear = true;
 
-            for (let elem of underMouse) {
+            for (const elem of underMouse) {
               if (
                 elem.classList.contains("task-expand-img") ||
                 elem.classList.contains("subtasks-plus-img")
@@ -1067,7 +1069,7 @@ let listener = (function () {
     });
   };
 
-  let addRightClick = function () {
+  const addRightClick = function () {
     document.addEventListener("contextmenu", (_e) => {
       _e.preventDefault();
     });
@@ -1084,7 +1086,7 @@ let listener = (function () {
     });
   };
 
-  let addModifierKeys = function () {
+  const addModifierKeys = function () {
     document.addEventListener("keydown", (_e) => {
       stateManager.setSelectionAddTo.bind(stateManager, true, _e)();
       stateManager.setSelectionMass.bind(stateManager, true, _e)();
@@ -1096,11 +1098,11 @@ let listener = (function () {
     });
   };
 
-  let addClearData = function () {
-    let clearData = document.querySelector(".clear-data");
-    clearData.addEventListener("click", (_e) => {
+  const addClearData = function () {
+    const clearData = document.querySelector(".clear-data");
+    clearData.addEventListener("click", () => {
       if (!stateManager.currentlyEditing) {
-        let shouldDelete = confirm(
+        const shouldDelete = confirm(
           "This will delete all saved data. Continue?"
         );
 
@@ -1112,8 +1114,8 @@ let listener = (function () {
     });
   };
 
-  let addExpandSubtasks = function (_elem, _task, _subtasksElem) {
-    _elem.addEventListener("click", (_event) => {
+  const addExpandSubtasks = function (_elem, _task, _subtasksElem) {
+    _elem.addEventListener("click", () => {
       if (stateManager.currentlyEditing) return;
 
       _task.subtaskList.expanded = !_task.subtaskList.expanded;
@@ -1126,26 +1128,26 @@ let listener = (function () {
     });
   };
 
-  let addExpandTask = function (
+  const addExpandTask = function (
     _elem,
     _task,
     _taskElem,
     _svgPathElem,
     _headerElem
   ) {
-    _elem.addEventListener("click", (_event) => {
+    _elem.addEventListener("click", () => {
       if (stateManager.currentlyEditing) return;
       _task.expanded = !_task.expanded;
       dom.updateTaskExpandView(_svgPathElem, _taskElem, _task);
     });
 
     _headerElem.addEventListener("mouseover", (_event) => {
-      let underMouse = document.elementsFromPoint(
+      const underMouse = document.elementsFromPoint(
         _event.clientX,
         _event.clientY
       );
 
-      for (let _e of underMouse) {
+      for (const _e of underMouse) {
         // Disregard positions that also intersect the expand button.
         if (_e.classList.contains("task-expand-img")) {
           _headerElem.classList.remove("hover-possible");
@@ -1160,8 +1162,8 @@ let listener = (function () {
     });
   };
 
-  let addProgress = function (_svgElem, _task) {
-    _svgElem.addEventListener("click", (_event) => {
+  const addProgress = function (_svgElem, _task) {
+    _svgElem.addEventListener("click", () => {
       if (!stateManager.currentlyEditing) {
         _task.progress = Math.max((_task.progress + 1) % 4, 1);
         _task.refreshDom(false);
@@ -1169,7 +1171,7 @@ let listener = (function () {
     });
   };
 
-  let addOpenEdit = function (_elem, _task) {
+  const addOpenEdit = function (_elem, _task) {
     _elem.addEventListener("click", (_event) => {
       // Because mouseover doesn't exist on a touchscreen, the edit button is
       // revealed once the user has tapped the task's header and can only be
@@ -1180,25 +1182,25 @@ let listener = (function () {
           if (_task.selected && stateManager.touch.touchedId[0] == _task.id) {
             _task.currentlyEditing = true;
             stateManager.currentlyEditing = true;
-            let inputBox = dom.createInputBox(_task);
+            const inputBox = dom.createInputBox(_task);
             addInputCard(_task, inputBox);
           }
         } else {
           _task.currentlyEditing = true;
           stateManager.currentlyEditing = true;
-          let inputBox = dom.createInputBox(_task);
+          const inputBox = dom.createInputBox(_task);
           addInputCard(_task, inputBox);
         }
       }
     });
   };
 
-  let addInputCard = function (_task, _inputObj) {
-    _inputObj.progressCheck.addEventListener("change", (_e) => {
+  const addInputCard = function (_task, _inputObj) {
+    _inputObj.progressCheck.addEventListener("change", () => {
       dom.updateProgressField(_inputObj.progressCheck, _inputObj.progressField);
     });
 
-    _inputObj.confirm.addEventListener("click", (_event) => {
+    _inputObj.confirm.addEventListener("click", () => {
       _task.currentlyEditing = false;
       stateManager.currentlyEditing = false;
 
@@ -1224,7 +1226,7 @@ let listener = (function () {
       dom.thaw();
     });
 
-    _inputObj.cancel.addEventListener("click", (_event) => {
+    _inputObj.cancel.addEventListener("click", () => {
       _task.currentlyEditing = false;
       stateManager.currentlyEditing = false;
 
@@ -1247,7 +1249,7 @@ let listener = (function () {
   };
 })();
 
-let taskList = new TaskList();
+const taskList = new TaskList();
 taskList.restoreFromLocalStorage();
 
 listener.addLeftClick();
